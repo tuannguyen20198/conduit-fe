@@ -68,8 +68,9 @@ const Article = () => {
                 <fieldset className="form-group">
                   <input
                     type="text"
-                    className="form-control form-control-lg"
-                    placeholder="Article Title"
+                    className="form-control"
+                    placeholder="A
+                    rticle title"
                     {...register("title", { required: true })}
                   />
                 </fieldset>
