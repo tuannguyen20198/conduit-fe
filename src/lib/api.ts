@@ -72,10 +72,13 @@ export const getArticles = async (params: {
   offset?: number;
 }) => {
   try {
-    const { data } = await api.get("/articles", { params });
+    const { data } = await api.get("/articles", {
+      params,
+    });
     return data;
   } catch (error) {
     handleAPIError(error);
+    throw new Error("Failed to fetch articles");
   }
 };
 

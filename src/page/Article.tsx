@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { createArticle } from "@/lib/api";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 const Article = () => {
   const [tags, setTags] = useState<string[]>([]);
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
-
+  const navigate = useNavigate();
   const { register, handleSubmit, reset } = useForm({
     defaultValues: {
       title: "",
@@ -26,6 +27,7 @@ const Article = () => {
     onSuccess: () => {
       alert("Bài viết đã được đăng!");
       reset();
+      navigate("/");
       setTags([]);
     },
     onError: (error: any) => {

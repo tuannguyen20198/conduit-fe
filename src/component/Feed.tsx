@@ -2,11 +2,29 @@ import React, { useState } from "react";
 import { useArticles } from "@/hook/useArticles";
 import Sidebar from "./Sidebar";
 import { Link } from "react-router-dom";
+import ReactPaginate from "react-paginate";
+import { useTags } from "@/hook/useTags";
 
 const Feed = () => {
   const [activeTab, setActiveTab] = useState<"your" | "global">("global");
   const [selectedTag, setSelectedTag] = useState<string | undefined>(undefined);
-  const { articles, isLoading, error, tags } = useArticles(activeTab, selectedTag);
+  const [currentPage, setCurrentPage] = useState(1);
+  const articlesPerPage = 10;
+
+  const { articles, isLoading, error } = useArticles(
+    activeTab,
+    selectedTag,
+    currentPage,
+    articlesPerPage
+  );
+  const { data: tags } = useTags();
+
+  const totalArticles = articles?.articlesCount || 0;
+  const pageCount = Math.max(1, Math.ceil(totalArticles / articlesPerPage));
+
+  const handlePageClick = ({ selected }: { selected: number }) => {
+    setCurrentPage(selected + 1);
+  };
 
   return (
     <div className="container page">
@@ -19,7 +37,11 @@ const Feed = () => {
               <li className="nav-item">
                 <button
                   className={`nav-link ${activeTab === "your" ? "active" : ""}`}
-                  onClick={() => { setActiveTab("your"); setSelectedTag(undefined); }}
+                  onClick={() => {
+                    setActiveTab("your");
+                    setSelectedTag(undefined);
+                    setCurrentPage(1);
+                  }}
                 >
                   Your Feed
                 </button>
@@ -27,7 +49,11 @@ const Feed = () => {
               <li className="nav-item">
                 <button
                   className={`nav-link ${activeTab === "global" ? "active" : ""}`}
-                  onClick={() => { setActiveTab("global"); setSelectedTag(undefined); }}
+                  onClick={() => {
+                    setActiveTab("global");
+                    setSelectedTag(undefined);
+                    setCurrentPage(1);
+                  }}
                 >
                   Global Feed
                 </button>
@@ -51,9 +77,7 @@ const Feed = () => {
                   <Link to={`/profile/${article.author.username}`} className="author">
                     {article.author.username}
                   </Link>
-                  <span className="date">
-                    {new Date(article.createdAt).toDateString()}
-                  </span>
+                  <span className="date">{new Date(article.createdAt).toDateString()}</span>
                 </div>
                 <button className="btn btn-outline-primary btn-sm pull-xs-right">
                   <i className="ion-heart" /> {article.favoritesCount}
@@ -64,29 +88,54 @@ const Feed = () => {
                 <p>{article.description}</p>
                 <span>Read more...</span>
                 <ul className="tag-list">
-                {article.tagList.length > 0 ? (
-                  article.tagList.map((tag: string) => (
-                    <li
-                      key={tag}
-                      className={`tag-default tag-pill tag-outline ${selectedTag === tag ? "active" : ""}`}
-                      onClick={() => {
-                        setSelectedTag(tag);
-                        setActiveTab("global");
-                      }}
-                    >
-                      {tag}
-                    </li>
-                  ))
-                ) : (
-                  <p>No tags available</p>
-                )}
+                  {article.tagList.length > 0 ? (
+                    article.tagList.map((tag: string) => (
+                      <li
+                        key={tag}
+                        className={`tag-default tag-pill tag-outline ${
+                          selectedTag === tag ? "active" : ""
+                        }`}
+                        onClick={() => {
+                          setSelectedTag(tag);
+                          setActiveTab("global");
+                          setCurrentPage(1);
+                        }}
+                      >
+                        {tag}
+                      </li>
+                    ))
+                  ) : (
+                    <p>No tags available</p>
+                  )}
                 </ul>
               </Link>
             </div>
           ))}
+
+          {/* Pagination */}
+          {pageCount > 1 && (
+            <ReactPaginate
+              previousLabel={"← Previous"}
+              nextLabel={"Next →"}
+              breakLabel={"..."}
+              pageCount={pageCount}
+              marginPagesDisplayed={2}
+              pageRangeDisplayed={3}
+              onPageChange={handlePageClick}
+              containerClassName={"pagination"}
+              pageClassName={"page-item"}
+              pageLinkClassName={"page-link"}
+              previousClassName={"page-item"}
+              nextClassName={"page-item"}
+              previousLinkClassName={"page-link"}
+              nextLinkClassName={"page-link"}
+              activeClassName={"active"}
+              disabledClassName={"disabled"}
+            />
+          )}
         </div>
 
-        {/* Sidebar - Chuyển sang phải bằng order-md-last */}
+        {/* Sidebar */}
         <div className="col-md-3 order-md-last cursor-pointer">
           <Sidebar tags={tags?.tags || []} selectedTag={selectedTag} setSelectedTag={setSelectedTag} />
         </div>
