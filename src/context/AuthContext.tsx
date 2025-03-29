@@ -11,6 +11,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   login: (userData: { user: User }) => void; 
+  register: (userData: { user: User }) => void;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   logout: () => void;
 }
@@ -45,7 +46,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("token", userData.user.token);
     setUser(userData.user);
   };
+  const register = (userData: { user: User }) => {
+    if (!userData.user || !userData.user.token) {
+      console.error("🚨 User data is missing or invalid!", userData);
+      return;
+    }
   
+    console.log("✅ User data received:", userData);
+  
+    localStorage.setItem("user", JSON.stringify(userData.user));
+    localStorage.setItem("token", userData.user.token);
+    setUser(userData.user);
+  };
 
   const logout = () => {
     localStorage.removeItem("user");
@@ -54,7 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user,setUser, login, logout }}>
+    <AuthContext.Provider value={{ user,setUser, login,register, logout }}>
       {children}
     </AuthContext.Provider>
   );
