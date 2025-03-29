@@ -2,6 +2,10 @@ import SettingsForm from "@/component/SettingForms";
 import { SettingsProps } from "@/interfaces/settings";
 import React from "react";
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 
 
 const Settings: React.FC<SettingsProps> = ({ formData, isChanged, handleChange, handleSubmit, error }) => {

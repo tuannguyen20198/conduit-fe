@@ -25,14 +25,17 @@ export interface SettingsFormProps {
     bio: string;
     email: string;
     password: string;
-  };
-  isChanged: boolean;
-  handleChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => void;
-  handleSubmit: (e: React.FormEvent) => Promise<void>;
-  error: string | null;
-}
+  }
 
-// Nếu SettingsFormProps giống hệt thì không cần tạo thêm interface
-export type SettingsProps = SettingsFormProps;
+  export interface SettingsFormProps {
+    formData: FormData;
+    isChanged: boolean;
+    handleChange: (
+      e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => void;
+    handleSubmit: (e: React.FormEvent) => Promise<void>;
+    error: string | null;
+  }
+
+  export interface SettingsProps extends SettingsFormProps {}
+}
