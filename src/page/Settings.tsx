@@ -1,19 +1,8 @@
 import SettingsForm from "@/component/SettingForms";
+import { SettingsProps } from "@/interfaces/settings";
 import React from "react";
 
-interface SettingsProps {
-  formData: {
-    image: string;
-    username: string;
-    bio: string;
-    email: string;
-    password: string;
-  };
-  isChanged: boolean;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  handleSubmit: (e: React.FormEvent) => Promise<void>;
-  error: string | null;
-}
+
 
 const Settings: React.FC<SettingsProps> = (props) => {
   return (
