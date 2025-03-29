@@ -4,6 +4,7 @@ import Sidebar from "./Sidebar";
 import { Link } from "react-router-dom";
 import ReactPaginate from "react-paginate";
 import { useTags } from "@/hook/useTags";
+import { useAuth } from "@/context/AuthContext";
 
 const Feed = () => {
   const [activeTab, setActiveTab] = useState<"your" | "global">("global");
@@ -11,14 +12,17 @@ const Feed = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const articlesPerPage = 10;
 
+  const { user: authToken } = useAuth();
+
+  // Chỉ gọi API khi user đăng nhập nếu chọn tab "your"
   const { articles, isLoading, likeMutation, unlikeMutation, error } = useArticles(
-    activeTab,
+    activeTab === "your" ? (authToken ? "your" : "global") : "global",
     selectedTag,
     currentPage,
     articlesPerPage
   );
+
   const { data: tags } = useTags();
-  console.log(articles, "articles");
   const totalArticles = articles?.articlesCount || 0;
   const pageCount = Math.max(1, Math.ceil(totalArticles / articlesPerPage));
 
@@ -27,6 +31,10 @@ const Feed = () => {
   };
 
   const handleLikeToggle = (slug: string, isFavorited: boolean) => {
+    if (!authToken) {
+      alert("Please log in to like articles.");
+      return;
+    }
     if (isFavorited) {
       unlikeMutation.mutate(slug);
     } else {
@@ -35,13 +43,7 @@ const Feed = () => {
   };
 
   const handleTagClick = (tag: string) => {
-    setSelectedTag((prevTags) => {
-      if (prevTags.includes(tag)) {
-        return prevTags.filter((t) => t !== tag);
-      } else {
-        return [...prevTags, tag];
-      }
-    });
+    setSelectedTag([tag]); // Only allow one tag selection at a time
   };
 
   return (
@@ -50,18 +52,20 @@ const Feed = () => {
         <div className="col-md-9">
           <div className="feed-toggle">
             <ul className="nav nav-pills outline-active">
-              <li className="nav-item">
-                <button
-                  className={`nav-link ${activeTab === "your" ? "active" : ""}`}
-                  onClick={() => {
-                    setActiveTab("your");
-                    setSelectedTag([]);
-                    setCurrentPage(1);
-                  }}
-                >
-                  Your Feed
-                </button>
-              </li>
+              {authToken && (
+                <li className="nav-item">
+                  <button
+                    className={`nav-link ${activeTab === "your" ? "active" : ""}`}
+                    onClick={() => {
+                      setActiveTab("your");
+                      setSelectedTag([]);
+                      setCurrentPage(1);
+                    }}
+                  >
+                    Your Feed
+                  </button>
+                </li>
+              )}
               <li className="nav-item">
                 <button
                   className={`nav-link ${activeTab === "global" ? "active" : ""}`}
@@ -82,44 +86,45 @@ const Feed = () => {
 
           {!isLoading && articles?.articles?.length === 0 && <p>No articles in this section.</p>}
           {articles?.articles?.map((article: any) => (
-            <div key={article.slug} className="article-preview">
-              <div className="article-meta">
-                <Link to={`/profile/${article.author.username}`}>
-                  <img src={article.author.image} alt={article.author.username} />
-                </Link>
-                <div className="info">
-                  <Link to={`/profile/${article.author.username}`} className="author">
-                    {article.author.username}
+            (
+              <div key={article.slug} className="article-preview">
+                <div className="article-meta">
+                  <Link to={`/profile/${article.author.username}`}>
+                    <img src={article.author.image} alt={article.author.username} />
                   </Link>
-                  <span className="date">{new Date(article.createdAt).toDateString()}</span>
+                  <div className="info">
+                    <Link to={`/profile/${article.author.username}`} className="author">
+                      {article.author.username}
+                    </Link>
+                    <span className="date">{new Date(article.createdAt).toDateString()}</span>
+                  </div>
+                  <button className="btn btn-outline-primary btn-sm pull-xs-right" onClick={() => handleLikeToggle(article.slug, article.favorited)}>
+                    <i className="ion-heart" /> {article.favoritesCount}
+                  </button>
                 </div>
-                <button className="btn btn-outline-primary btn-sm pull-xs-right" onClick={() => handleLikeToggle(article.slug, article.favorited)}>
-                  <i className="ion-heart" /> {article.favoritesCount}
-                </button>
+                <Link to={`/article/${article.slug}`} className="preview-link">
+                  <h1>{article.title}</h1>
+                  <p>{article.description}</p>
+                  <span>Read more...</span>
+                  <ul className="tag-list">
+                    {article.tagList.length > 0 ? (
+                      article.tagList.map((tag: string) => (
+                        <li
+                          key={tag}
+                          className={`tag-default tag-pill tag-outline ${selectedTag.includes(tag) ? "active" : ""
+                            }`}
+                          onClick={() => handleTagClick(tag)}
+                        >
+                          {tag}
+                        </li>
+                      ))
+                    ) : (
+                      <p>No tags available</p>
+                    )}
+                  </ul>
+                </Link>
               </div>
-              <Link to={`/article/${article.slug}`} className="preview-link">
-                <h1>{article.title}</h1>
-                <p>{article.description}</p>
-                <span>Read more...</span>
-                <ul className="tag-list">
-                  {article.tagList.length > 0 ? (
-                    article.tagList.map((tag: string) => (
-                      <li
-                        key={tag}
-                        className={`tag-default tag-pill tag-outline ${
-                          selectedTag.includes(tag) ? "active" : ""
-                        }`}
-                        onClick={() => handleTagClick(tag)}
-                      >
-                        {tag}
-                      </li>
-                    ))
-                  ) : (
-                    <p>No tags available</p>
-                  )}
-                </ul>
-              </Link>
-            </div>
+            )
           ))}
 
           {pageCount > 1 && (

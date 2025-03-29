@@ -1,5 +1,4 @@
-import Feed from '@/component/Feed'
-import React from 'react'
+import Feed from "@/component/Feed"
 
 const Home = () => {
     return (
