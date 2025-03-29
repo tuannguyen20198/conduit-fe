@@ -1,79 +1,67 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getArticles, likeArticle, unlikeArticle } from "@/lib/api";
-import { useAuth } from "@/context/AuthContext";
+import { createArticle } from "@/lib/api";
+import { useMutation } from "@tanstack/react-query";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
-export const useArticles = (
-  activeTab: "your" | "global",
-  selectedTags: string[] = [],
-  page: number = 1,
-  limit: number = 5
-) => {
-  const offset = (page - 1) * limit;
-  const queryClient = useQueryClient();
-  const { user: authToken } = useAuth(); // Lấy token user
-
-  const shouldFetchFeed = activeTab === "your" && !!authToken;
-
-  const {
-    data: articles,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["articles", activeTab, selectedTags, page],
-    queryFn: () =>
-      getArticles({
-        ...(shouldFetchFeed ? { feed: true } : {}), // Chỉ fetch feed nếu user đăng nhập
-        ...(selectedTags.length > 0 ? { tag: selectedTags.join(",") } : {}),
-        limit,
-        offset,
-      }),
-    enabled: activeTab === "global" || shouldFetchFeed, // Chỉ fetch nếu là Global hoặc có user đăng nhập
-    initialData: { articles: [], articlesCount: 0 },
+const useArticles = () => {
+  const [tags, setTags] = useState<string[]>([]);
+  const [errorMessages, setErrorMessages] = useState<string[]>([]);
+  const navigate = useNavigate();
+  const { register, handleSubmit, reset } = useForm({
+    defaultValues: {
+      title: "",
+      description: "",
+      body: "",
+      tagList: "",
+    },
   });
 
-  // Cập nhật trạng thái like ngay lập tức
-  const updateArticleOptimistically = (slug: string, favorited: boolean) => {
-    queryClient.setQueryData(
-      ["articles", activeTab, selectedTags, page],
-      (oldData: any) => {
-        if (!oldData) return oldData;
-        return {
-          ...oldData,
-          articles: oldData.articles.map((article: any) =>
-            article.slug === slug
-              ? {
-                  ...article,
-                  favorited,
-                  favoritesCount: article.favoritesCount + (favorited ? 1 : -1),
-                }
-              : article
-          ),
-        };
+  const mutation = useMutation({
+    mutationFn: async (articleData: {
+      title: string;
+      description: string;
+      body: string;
+      tagList: string[];
+    }) => createArticle(articleData),
+    onSuccess: () => {
+      alert("Bài viết đã được đăng!");
+      reset();
+      navigate("/");
+      setTags([]);
+    },
+    onError: (error: any) => {
+      try {
+        const parsedErrors = JSON.parse(error.message) as Record<
+          string,
+          string[]
+        >;
+        setErrorMessages(Object.values(parsedErrors).flat());
+      } catch {
+        setErrorMessages(["Có lỗi xảy ra, vui lòng thử lại."]);
       }
-    );
+    },
+  });
+
+  const onSubmit = (data: any) => {
+    const articleData = {
+      title: data.title,
+      description: data.description,
+      body: data.body,
+      tagList: tags,
+    };
+    mutation.mutate(articleData);
   };
-
-  const likeMutation = useMutation({
-    mutationFn: (slug: string) => likeArticle(slug),
-    onMutate: (slug: string) => updateArticleOptimistically(slug, true),
-    onError: (_, slug) => updateArticleOptimistically(slug, false),
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["articles", activeTab, ...selectedTags, page],
-      });
-    },
-  });
-
-  const unlikeMutation = useMutation({
-    mutationFn: (slug: string) => unlikeArticle(slug),
-    onMutate: (slug: string) => updateArticleOptimistically(slug, false),
-    onError: (_, slug) => updateArticleOptimistically(slug, true),
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["articles", activeTab, ...selectedTags, page],
-      });
-    },
-  });
-
-  return { articles, isLoading, error, likeMutation, unlikeMutation };
+  return {
+    tags,
+    setTags,
+    errorMessages,
+    setErrorMessages,
+    register,
+    handleSubmit,
+    onSubmit,
+    mutation,
+  };
 };
+
+export default useArticles;

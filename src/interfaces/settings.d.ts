@@ -1,6 +1,26 @@
-declare module "@/interfaces/settings" {
-  export interface FormData {
-    image: string;
+// Không cần `declare module`
+export interface FormData {
+  image: string;
+  username: string;
+  bio: string;
+  email: string;
+  password: string;
+}
+
+export interface User {
+  image?: string;
+  username: string;
+  bio?: string;
+  email: string;
+}
+
+export interface SettingsFormData extends User {
+  password?: string;
+}
+
+export interface SettingsFormProps {
+  formData: {
+    image?: string; // Cho phép undefined
     username: string;
     bio: string;
     email: string;
