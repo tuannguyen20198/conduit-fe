@@ -23,15 +23,13 @@ export const useSettings = () => {
 
   useEffect(() => {
     if (user) {
-      const userData = {
-        image: user.image || "",
+      setFormData({
+        image: user.image || "", // Thêm giá trị mặc định
         username: user.username || "",
         bio: user.bio || "",
         email: user.email || "",
         password: "",
-      };
-      setFormData(userData);
-      setOriginalData(userData); // Lưu dữ liệu gốc để so sánh
+      });
     }
   }, [user]);
 

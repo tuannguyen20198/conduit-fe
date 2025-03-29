@@ -7,7 +7,16 @@ const SettingsPage: React.FC = () => {
 
   if (!formData) return <p>Loading user data...</p>;
 
-  return <Settings formData={formData} isChanged={isChanged} handleChange={handleChange} handleSubmit={handleSubmit} error={error} />;
+  return (
+    <Settings
+    formData={{ ...formData, password: formData.password || "" }} // Đảm bảo `password` luôn là string
+    isChanged={isChanged}
+    handleChange={handleChange}
+    handleSubmit={handleSubmit}
+    error={error}
+    />
+  )
+
 };
 
 export default SettingsPage;
