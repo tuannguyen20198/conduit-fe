@@ -19,7 +19,13 @@ export interface SettingsFormData extends User {
 }
 
 export interface SettingsFormProps {
-  formData: SettingsFormData;
+  formData: {
+    image?: string; // Cho phép undefined
+    username: string;
+    bio: string;
+    email: string;
+    password: string;
+  };
   isChanged: boolean;
   handleChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>

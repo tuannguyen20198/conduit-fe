@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
 import { updateUser } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
-import { SettingsFormData } from "@/interfaces/settings"; // ✅ Import đúng
+import { SettingsFormData } from "@/interfaces/settings";
 
 export const useSettings = () => {
   const { user, setUser, logout } = useAuth();
@@ -18,26 +18,31 @@ export const useSettings = () => {
 
   const [formData, setFormData] = useState<SettingsFormData>(defaultFormData);
   const [error, setError] = useState<string | null>(null);
+  const [originalData, setOriginalData] =
+    useState<SettingsFormData>(defaultFormData);
 
   useEffect(() => {
     if (user) {
-      setFormData({
+      const userData = {
         image: user.image || "",
         username: user.username || "",
         bio: user.bio || "",
         email: user.email || "",
         password: "",
-      });
+      };
+      setFormData(userData);
+      setOriginalData(userData); // Lưu dữ liệu gốc để so sánh
     }
   }, [user]);
 
   const isChanged = useMemo(() => {
-    if (!user) return false;
     const { password, ...currentData } = formData;
+    const { password: _, ...original } = originalData;
     return (
-      JSON.stringify(currentData) !== JSON.stringify(user) || password !== ""
+      JSON.stringify(currentData) !== JSON.stringify(original) ||
+      password !== ""
     );
-  }, [formData, user]);
+  }, [formData, originalData]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -48,7 +53,7 @@ export const useSettings = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isChanged) return;
+    if (!isChanged) return; // Ngăn chặn cập nhật nếu không có thay đổi
     setError(null);
 
     const { password, ...updatedUserData } = formData;
@@ -61,6 +66,7 @@ export const useSettings = () => {
       if (!response?.user) throw new Error("Update failed.");
 
       setUser((prev) => ({ ...prev, ...response.user }));
+      setOriginalData(response.user); // Cập nhật dữ liệu gốc sau khi thành công
 
       if (password) {
         logout();
