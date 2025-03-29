@@ -64,22 +64,16 @@ export const updateUser = async (
 };
 
 // ✅ Lấy danh sách bài viết
-export const getArticles = async (params: {
+export const getArticles = (params: {
   tag?: string;
   author?: string;
-  favorited?: string;
   limit?: number;
   offset?: number;
 }) => {
-  try {
-    const { data } = await api.get("/articles", {
-      params,
-    });
-    return data;
-  } catch (error) {
-    handleAPIError(error);
-    throw new Error("Failed to fetch articles");
-  }
+  // Gửi request đến API với các tham số sử dụng axios
+  return api
+    .get("/articles", { params }) // Gửi GET request với đối tượng params
+    .then((response) => response.data); // Trả về dữ liệu từ response
 };
 
 // ✅ Lấy thông tin bài viết theo slug

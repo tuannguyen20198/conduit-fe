@@ -3,7 +3,7 @@ import { getArticles } from "@/lib/api";
 
 export const useArticles = (
   activeTab: "your" | "global",
-  selectedTag?: string,
+  selectedTags: string[] = [], // selectedTags là mảng chứa các tag đã chọn
   page: number = 1,
   limit: number = 5
 ) => {
@@ -14,11 +14,11 @@ export const useArticles = (
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["articles", activeTab, selectedTag, page],
+    queryKey: ["articles", activeTab, selectedTags, page],
     queryFn: () =>
       getArticles({
         ...(activeTab === "your" ? { author: "your-feed" } : {}),
-        ...(selectedTag ? { tag: selectedTag } : {}),
+        ...(selectedTags.length > 0 ? { tag: selectedTags.join(",") } : {}),
         limit,
         offset,
       }),

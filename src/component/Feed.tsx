@@ -7,13 +7,13 @@ import { useTags } from "@/hook/useTags";
 
 const Feed = () => {
   const [activeTab, setActiveTab] = useState<"your" | "global">("global");
-  const [selectedTag, setSelectedTag] = useState<string | undefined>(undefined);
+  const [selectedTag, setSelectedTag] = useState<string[]>([]); // Giữ selectedTag là mảng nhiều tag
   const [currentPage, setCurrentPage] = useState(1);
   const articlesPerPage = 10;
 
   const { articles, isLoading, error } = useArticles(
     activeTab,
-    selectedTag,
+    selectedTag,  // Truyền mảng nhiều tag vào API
     currentPage,
     articlesPerPage
   );
@@ -23,7 +23,19 @@ const Feed = () => {
   const pageCount = Math.max(1, Math.ceil(totalArticles / articlesPerPage));
 
   const handlePageClick = ({ selected }: { selected: number }) => {
-    setCurrentPage(selected + 1);
+    setCurrentPage(selected + 1); // Điều chỉnh số trang
+  };
+
+  const handleTagClick = (tag: string) => {
+    setSelectedTag((prevTags) => {
+      if (prevTags.includes(tag)) {
+        // Nếu tag đã được chọn, bỏ chọn
+        return prevTags.filter((t) => t !== tag);
+      } else {
+        // Nếu tag chưa được chọn, thêm tag vào mảng
+        return [...prevTags, tag];
+      }
+    });
   };
 
   return (
@@ -39,7 +51,7 @@ const Feed = () => {
                   className={`nav-link ${activeTab === "your" ? "active" : ""}`}
                   onClick={() => {
                     setActiveTab("your");
-                    setSelectedTag(undefined);
+                    setSelectedTag([]); // Reset các tag đã chọn khi chuyển tab
                     setCurrentPage(1);
                   }}
                 >
@@ -51,7 +63,7 @@ const Feed = () => {
                   className={`nav-link ${activeTab === "global" ? "active" : ""}`}
                   onClick={() => {
                     setActiveTab("global");
-                    setSelectedTag(undefined);
+                    setSelectedTag([]); // Reset các tag đã chọn khi chuyển tab
                     setCurrentPage(1);
                   }}
                 >
@@ -93,13 +105,9 @@ const Feed = () => {
                       <li
                         key={tag}
                         className={`tag-default tag-pill tag-outline ${
-                          selectedTag === tag ? "active" : ""
+                          selectedTag.includes(tag) ? "active" : ""
                         }`}
-                        onClick={() => {
-                          setSelectedTag(tag);
-                          setActiveTab("global");
-                          setCurrentPage(1);
-                        }}
+                        onClick={() => handleTagClick(tag)} // Toggle tag selection
                       >
                         {tag}
                       </li>
@@ -137,7 +145,11 @@ const Feed = () => {
 
         {/* Sidebar */}
         <div className="col-md-3 order-md-last cursor-pointer">
-          <Sidebar tags={tags?.tags || []} selectedTag={selectedTag} setSelectedTag={setSelectedTag} />
+        <Sidebar
+            tags={tags || []} // Pass an empty array if tags is undefined
+            selectedTags={selectedTag}
+            setSelectedTags={setSelectedTag}
+          />
         </div>
       </div>
     </div>
