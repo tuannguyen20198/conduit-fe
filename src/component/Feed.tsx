@@ -7,32 +7,38 @@ import { useTags } from "@/hook/useTags";
 
 const Feed = () => {
   const [activeTab, setActiveTab] = useState<"your" | "global">("global");
-  const [selectedTag, setSelectedTag] = useState<string[]>([]); // Giữ selectedTag là mảng nhiều tag
+  const [selectedTag, setSelectedTag] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const articlesPerPage = 10;
 
-  const { articles, isLoading, error } = useArticles(
+  const { articles, isLoading, likeMutation, unlikeMutation, error } = useArticles(
     activeTab,
-    selectedTag,  // Truyền mảng nhiều tag vào API
+    selectedTag,
     currentPage,
     articlesPerPage
   );
   const { data: tags } = useTags();
-
+  console.log(articles, "articles");
   const totalArticles = articles?.articlesCount || 0;
   const pageCount = Math.max(1, Math.ceil(totalArticles / articlesPerPage));
 
   const handlePageClick = ({ selected }: { selected: number }) => {
-    setCurrentPage(selected + 1); // Điều chỉnh số trang
+    setCurrentPage(selected + 1);
+  };
+
+  const handleLikeToggle = (slug: string, isFavorited: boolean) => {
+    if (isFavorited) {
+      unlikeMutation.mutate(slug);
+    } else {
+      likeMutation.mutate(slug);
+    }
   };
 
   const handleTagClick = (tag: string) => {
     setSelectedTag((prevTags) => {
       if (prevTags.includes(tag)) {
-        // Nếu tag đã được chọn, bỏ chọn
         return prevTags.filter((t) => t !== tag);
       } else {
-        // Nếu tag chưa được chọn, thêm tag vào mảng
         return [...prevTags, tag];
       }
     });
@@ -41,9 +47,7 @@ const Feed = () => {
   return (
     <div className="container page">
       <div className="row">
-        {/* Feed - Danh sách bài viết */}
         <div className="col-md-9">
-          {/* Tab Navigation */}
           <div className="feed-toggle">
             <ul className="nav nav-pills outline-active">
               <li className="nav-item">
@@ -51,7 +55,7 @@ const Feed = () => {
                   className={`nav-link ${activeTab === "your" ? "active" : ""}`}
                   onClick={() => {
                     setActiveTab("your");
-                    setSelectedTag([]); // Reset các tag đã chọn khi chuyển tab
+                    setSelectedTag([]);
                     setCurrentPage(1);
                   }}
                 >
@@ -63,7 +67,7 @@ const Feed = () => {
                   className={`nav-link ${activeTab === "global" ? "active" : ""}`}
                   onClick={() => {
                     setActiveTab("global");
-                    setSelectedTag([]); // Reset các tag đã chọn khi chuyển tab
+                    setSelectedTag([]);
                     setCurrentPage(1);
                   }}
                 >
@@ -73,11 +77,9 @@ const Feed = () => {
             </ul>
           </div>
 
-          {/* Loading & Error */}
           {isLoading && <p>Loading articles...</p>}
           {error && <p className="error-message">Failed to load articles.</p>}
 
-          {/* Display articles */}
           {!isLoading && articles?.articles?.length === 0 && <p>No articles in this section.</p>}
           {articles?.articles?.map((article: any) => (
             <div key={article.slug} className="article-preview">
@@ -91,7 +93,7 @@ const Feed = () => {
                   </Link>
                   <span className="date">{new Date(article.createdAt).toDateString()}</span>
                 </div>
-                <button className="btn btn-outline-primary btn-sm pull-xs-right">
+                <button className="btn btn-outline-primary btn-sm pull-xs-right" onClick={() => handleLikeToggle(article.slug, article.favorited)}>
                   <i className="ion-heart" /> {article.favoritesCount}
                 </button>
               </div>
@@ -107,7 +109,7 @@ const Feed = () => {
                         className={`tag-default tag-pill tag-outline ${
                           selectedTag.includes(tag) ? "active" : ""
                         }`}
-                        onClick={() => handleTagClick(tag)} // Toggle tag selection
+                        onClick={() => handleTagClick(tag)}
                       >
                         {tag}
                       </li>
@@ -120,7 +122,6 @@ const Feed = () => {
             </div>
           ))}
 
-          {/* Pagination */}
           {pageCount > 1 && (
             <ReactPaginate
               previousLabel={"← Previous"}
@@ -143,10 +144,9 @@ const Feed = () => {
           )}
         </div>
 
-        {/* Sidebar */}
         <div className="col-md-3 order-md-last cursor-pointer">
-        <Sidebar
-            tags={tags || []} // Pass an empty array if tags is undefined
+          <Sidebar
+            tags={tags || []}
             selectedTags={selectedTag}
             setSelectedTags={setSelectedTag}
           />

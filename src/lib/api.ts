@@ -118,3 +118,13 @@ export const createArticle = async (article: {
     handleAPIError(error);
   }
 };
+
+export const likeArticle = async (slug: string) => {
+  const response = await api.post(`/articles/${slug}/favorite`);
+  return response.data.article;
+};
+
+export const unlikeArticle = async (slug: string) => {
+  const response = await api.delete(`/articles/${slug}/favorite`);
+  return response.data.article;
+};
