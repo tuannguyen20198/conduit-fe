@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 const Profile = () => {
   return (
@@ -17,10 +18,10 @@ const Profile = () => {
                 <i className="ion-plus-round" />
                 &nbsp; Follow Eric Simons
             </button>
-            <button className="btn btn-sm btn-outline-secondary action-btn">
+            <Link to={'/settings'} className="btn btn-sm btn-outline-secondary action-btn">
                 <i className="ion-gear-a" />
                 &nbsp; Edit Profile Settings
-            </button>
+            </Link>
             </div>
         </div>
         </div>

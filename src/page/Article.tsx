@@ -69,8 +69,7 @@ const Article = () => {
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="A
-                    rticle title"
+                    placeholder="Article title"
                     {...register("title", { required: true })}
                   />
                 </fieldset>
