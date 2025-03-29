@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useArticles } from "@/hook/useArticles";
+import { useFeed } from "@/hook/useFeeds";
 import Sidebar from "./Sidebar";
 import { Link } from "react-router-dom";
 import ReactPaginate from "react-paginate";
@@ -15,7 +15,7 @@ const Feed = () => {
   const { user: authToken } = useAuth();
 
   // Chỉ gọi API khi user đăng nhập nếu chọn tab "your"
-  const { articles, isLoading, likeMutation, unlikeMutation, error } = useArticles(
+  const { articles, isLoading, likeMutation, unlikeMutation, error } = useFeed(
     activeTab === "your" ? (authToken ? "your" : "global") : "global",
     selectedTag,
     currentPage,
