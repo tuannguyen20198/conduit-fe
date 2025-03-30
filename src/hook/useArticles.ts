@@ -1,66 +1,52 @@
-import { createArticle } from "@/lib/api";
-import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 
 const useArticles = () => {
-  const [tags, setTags] = useState<string[]>([]);
-  const [errorMessages, setErrorMessages] = useState<string[]>([]);
-  const navigate = useNavigate();
-  const { register, handleSubmit, reset } = useForm({
-    defaultValues: {
-      title: "",
-      description: "",
-      body: "",
-      tagList: "",
-    },
-  });
-
-  const mutation = useMutation({
-    mutationFn: async (articleData: {
-      title: string;
-      description: string;
-      body: string;
-      tagList: string[];
-    }) => createArticle(articleData),
-    onSuccess: () => {
-      alert("Bài viết đã được đăng!");
-      reset();
-      navigate("/");
-      setTags([]);
-    },
-    onError: (error: any) => {
-      try {
-        const parsedErrors = JSON.parse(error.message) as Record<
-          string,
-          string[]
-        >;
-        setErrorMessages(Object.values(parsedErrors).flat());
-      } catch {
-        setErrorMessages(["Có lỗi xảy ra, vui lòng thử lại."]);
-      }
-    },
-  });
-
-  const onSubmit = (data: any) => {
-    const articleData = {
-      title: data.title,
-      description: data.description,
-      body: data.body,
-      tagList: tags,
-    };
-    mutation.mutate(articleData);
-  };
-  return {
-    tags,
-    setTags,
-    errorMessages,
-    setErrorMessages,
+  const {
     register,
     handleSubmit,
+    formState: { errors },
+  } = useForm({ mode: "onSubmit" });
+  const [apiErrors, setApiErrors] = useState<string[]>([]); // Lưu lỗi từ API
+  const onSubmit = async (data: any) => {
+    setApiErrors([]); // Xóa lỗi trước đó
+
+    try {
+      const response = await axios.post("/api/articles", {
+        title: data.title,
+        description: data.description,
+        body: data.body,
+        tagList: data.tags
+          ? data.tags.split(",").map((tag: string) => tag.trim())
+          : [], // Đúng tên backend mong đợi
+      });
+
+      if (response.status === 200) {
+        alert("Article published successfully!");
+      }
+    } catch (error: any) {
+      console.error("Error:", error);
+
+      if (error.response?.data?.message) {
+        const messages = Array.isArray(error.response.data.message)
+          ? error.response.data.message.map((msg: any) =>
+              Object.values(msg.constraints || {}).join(", ")
+            )
+          : [error.response.data.message];
+
+        setApiErrors(messages);
+      } else {
+        setApiErrors(["Failed to publish article."]);
+      }
+    }
+  };
+  return {
+    register: register,
+    handleSubmit,
+    errors,
+    apiErrors,
     onSubmit,
-    mutation,
   };
 };
 
