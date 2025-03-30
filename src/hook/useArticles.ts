@@ -1,52 +1,45 @@
-import axios from "axios";
-import React, { useState } from "react";
+import { createArticle } from "@/lib/api";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 const useArticles = () => {
   const {
     register,
     handleSubmit,
+    setValue,
+    setError,
+    clearErrors,
     formState: { errors },
-  } = useForm({ mode: "onSubmit" });
+  } = useForm<{ tags: string[] }>({
+    mode: "onSubmit",
+    defaultValues: { tags: [] }, // ✅ Đảm bảo `tags` là array từ đầu
+  });
+
   const [apiErrors, setApiErrors] = useState<string[]>([]); // Lưu lỗi từ API
-  const onSubmit = async (data: any) => {
-    setApiErrors([]); // Xóa lỗi trước đó
+  const [tags, setTags] = useState<string[]>([]); // State lưu tags
 
-    try {
-      const response = await axios.post("/api/articles", {
-        title: data.title,
-        description: data.description,
-        body: data.body,
-        tagList: data.tags
-          ? data.tags.split(",").map((tag: string) => tag.trim())
-          : [], // Đúng tên backend mong đợi
-      });
-
-      if (response.status === 200) {
-        alert("Article published successfully!");
-      }
-    } catch (error: any) {
-      console.error("Error:", error);
-
-      if (error.response?.data?.message) {
-        const messages = Array.isArray(error.response.data.message)
-          ? error.response.data.message.map((msg: any) =>
-              Object.values(msg.constraints || {}).join(", ")
-            )
-          : [error.response.data.message];
-
-        setApiErrors(messages);
-      } else {
-        setApiErrors(["Failed to publish article."]);
-      }
-    }
+  const handleTagsChange = (tags: string[]) => {
+    setValue("tags", tags); // ✅ Cập nhật `tags` vào form
+    if (tags.length > 0) clearErrors("tags"); // ✅ Xóa lỗi nếu có
   };
+  const onSubmit = async (data: any) => {
+    if (!data.tags || data.tags.length === 0) {
+      setError("tags", { type: "required", message: "Tags is required" });
+      return;
+    }
+    console.log("Final Payload:", data); // ✅ Kiểm tra dữ liệu gửi đi
+  };
+
   return {
-    register: register,
+    register,
     handleSubmit,
+    onSubmit,
     errors,
     apiErrors,
-    onSubmit,
+    setApiErrors,
+    tags,
+    setTags,
+    handleTagsChange,
   };
 };
 

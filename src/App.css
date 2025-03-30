@@ -46,3 +46,39 @@ button:active {
   box-shadow: none !important;
   border: none !important;
 }
+
+.tag-list {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-default {
+  display: flex;
+  align-items: center;
+  background-color: #000;
+  color: #333;
+  padding: 6px 10px;
+  border-radius: 16px;
+  font-size: 14px;
+}
+
+.tag-pill {
+  border: 1px solid #ddd;
+}
+
+.tag-input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-top: 8px;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.tag-input:focus {
+  border-color: #007bff;
+  outline: none;
+}

@@ -25,3 +25,9 @@ export interface ArticleFormProps {
   onSubmit: (data: any) => void;
   apiErrors: string[];
 }
+
+interface FormTagsProps {
+  onTagsChange: (tags: string[]) => void;
+  setError: UseFormSetError<any>; // Nhận setError từ React Hook Form
+  clearErrors: (name: string) => void;
+}
