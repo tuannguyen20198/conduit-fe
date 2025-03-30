@@ -27,6 +27,7 @@ const useArticles = () => {
   };
 
   const onSubmit = async (data: any) => {
+    console.log("🚀 Dữ liệu form trước khi gửi:", data);
     if (!data.tags || data.tags.length === 0) {
       setError("tags", { type: "required", message: "Tags is required" });
       return;

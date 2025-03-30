@@ -110,22 +110,25 @@ export const getArticleBySlug = async (slug: string) => {
 };
 
 export const createArticle = async (data: any) => {
+  console.log("Payload gửi lên API:", data);
+
   try {
     const response = await api.post("/articles", {
       article: {
         title: data.title,
         description: data.description,
         body: data.body,
-        tagList: data.tags || [], // Đảm bảo tagList luôn có giá trị
+        tagList: data.tags || [],
       },
     });
 
+    console.log("Response từ server:", response.data);
+
     if (response.status === 200) {
       alert("Article published successfully!");
-      console.log(response.data);
     }
   } catch (error: any) {
-    console.error("Error:", error);
+    console.error("Error:", error.response?.data || error.message);
   }
 };
 
