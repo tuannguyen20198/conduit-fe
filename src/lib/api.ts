@@ -109,17 +109,23 @@ export const getArticleBySlug = async (slug: string) => {
   }
 };
 
-export const createArticle = async (article: {
-  title: string;
-  description: string;
-  body: string;
-  tagList: string[];
-}) => {
+export const createArticle = async (data: any) => {
   try {
-    const { data } = await api.post("/articles", { article });
-    return data;
-  } catch (error) {
-    handleAPIError(error);
+    const response = await api.post("/articles", {
+      article: {
+        title: data.title,
+        description: data.description,
+        body: data.body,
+        tagList: data.tags || [], // Đảm bảo tagList luôn có giá trị
+      },
+    });
+
+    if (response.status === 200) {
+      alert("Article published successfully!");
+      console.log(response.data);
+    }
+  } catch (error: any) {
+    console.error("Error:", error);
   }
 };
 

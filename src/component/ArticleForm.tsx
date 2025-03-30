@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import FormTags from "./FormTags";
 
 const ArticleForm = ({ onSubmit, apiErrors }: any) => {
-  const { register,clearErrors, handleSubmit, setValue, setError, formState: { errors } } = useForm({ mode: "onSubmit" });
+  const { register,clearErrors, handleSubmit, setValue, setError, formState: { errors,isValid  } } = useForm({ mode: "onSubmit" });
 
   // Hàm cập nhật `tags`
   const handleTagsChange = (tags: string[]) => {
@@ -56,8 +56,7 @@ console.log(errors.tags)
         <FormTags onTagsChange={handleTagsChange} setError={setError} clearErrors={clearErrors} />
         {errors.tags && <p className="text-danger">{String(errors.tags.message)}</p>}
       </fieldset>
-      <br />
-      <button className="btn btn-lg pull-xs-left btn-primary" type="submit">
+      <button className="btn btn-lg pull-xs-left btn-primary" type="submit" disabled={!isValid}>
         Publish Article
       </button>
     </form>

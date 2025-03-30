@@ -18,7 +18,7 @@ const useFeeds = () => {
   const [totalArticles, setTotalArticles] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const { user } = useAuth();
   const articlesPerPage = 10;
   const { user: authToken } = useAuth();
   const { data: tags } = useTags();
@@ -87,7 +87,15 @@ const useFeeds = () => {
   };
 
   const handleLike = async (slug: string, favorited: boolean) => {
+    if (!user) {
+      alert("Bạn cần đăng nhập để like bài viết!");
+      return;
+    }
+
     const updatedFavorited = !favorited;
+    const prevArticles = [...articles]; // Lưu lại trạng thái trước đó
+
+    // Cập nhật UI tạm thời
     setArticles((prevArticles) =>
       prevArticles.map((article) =>
         article.slug === slug
@@ -102,18 +110,24 @@ const useFeeds = () => {
       )
     );
 
-    const storedLikes = JSON.parse(
-      localStorage.getItem("likedArticles") || "{}"
-    );
-    storedLikes[slug] = updatedFavorited;
-    localStorage.setItem("likedArticles", JSON.stringify(storedLikes));
-
     try {
-      updatedFavorited
-        ? await favoriteArticle(slug)
-        : await unfavoriteArticle(slug);
+      if (updatedFavorited) {
+        await favoriteArticle(slug);
+      } else {
+        await unfavoriteArticle(slug);
+      }
+
+      // Cập nhật localStorage
+      const storedLikes = JSON.parse(
+        localStorage.getItem("likedArticles") || "{}"
+      );
+      storedLikes[slug] = updatedFavorited;
+      localStorage.setItem("likedArticles", JSON.stringify(storedLikes));
     } catch (err) {
-      console.error("Error updating favorite status", err);
+      console.error("Lỗi khi cập nhật trạng thái yêu thích:", err);
+
+      // Nếu lỗi, hoàn tác cập nhật UI
+      setArticles(prevArticles);
     }
   };
 
