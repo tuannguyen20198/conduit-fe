@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getArticles, likeArticle, unlikeArticle } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { use } from "react";
 
 export const useFeed = (
   activeTab: "your" | "global",
@@ -75,5 +76,17 @@ export const useFeed = (
     },
   });
 
-  return { articles, isLoading, error, likeMutation, unlikeMutation };
+  return {
+    articles,
+    isLoading,
+    error,
+    likeMutation,
+    unlikeMutation,
+    authToken,
+    selectedTags,
+    page,
+    limit,
+    activeTab,
+    user: authToken,
+  };
 };

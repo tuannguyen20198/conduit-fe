@@ -47,9 +47,9 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ formData, isChanged, handle
           </fieldset>
         ))}
 
-        <button className="btn btn-lg btn-primary pull-xs-right" type="submit" disabled={!isChanged}>
-          Update Settings
-        </button>
+      <button className="btn btn-lg btn-primary pull-xs-right" type="submit" disabled={!isChanged}>
+        Update Settings
+      </button>
       </fieldset>
     </form>
   );

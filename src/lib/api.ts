@@ -57,9 +57,13 @@ export const updateUser = async (
 ) => {
   try {
     const { data } = await api.put("/user", { user: userData });
+
+    if (!data?.user) throw new Error("Invalid API response"); // Kiểm tra API có trả về user không
+
     return data;
   } catch (error) {
     handleAPIError(error);
+    throw error; // Thêm throw để đảm bảo lỗi bị bắt
   }
 };
 

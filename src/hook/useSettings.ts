@@ -23,37 +23,44 @@ export const useSettings = () => {
 
   useEffect(() => {
     if (user) {
-      setFormData({
-        image: user.image || "", // Thêm giá trị mặc định
+      const newUserData = {
+        image: user.image || "",
         username: user.username || "",
         bio: user.bio || "",
         email: user.email || "",
         password: "",
-      });
+      };
+      setFormData(newUserData);
+      setOriginalData(newUserData); // Cập nhật originalData để so sánh đúng
     }
   }, [user]);
 
   const isChanged = useMemo(() => {
+    if (!formData || !originalData) return false;
+
     const { password, ...currentData } = formData;
     const { password: _, ...original } = originalData;
+
     return (
       JSON.stringify(currentData) !== JSON.stringify(original) ||
-      password !== ""
+      (password ?? "").trim() !== ""
     );
   }, [formData, originalData]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isChanged) return; // Ngăn chặn cập nhật nếu không có thay đổi
-    setError(null);
+    if (!isChanged) return;
 
+    setError(null);
     const { password, ...updatedUserData } = formData;
     const finalData = password
       ? { ...updatedUserData, password }
@@ -61,10 +68,14 @@ export const useSettings = () => {
 
     try {
       const response = await updateUser(finalData);
-      if (!response?.user) throw new Error("Update failed.");
+      console.log("API response:", response); // Kiểm tra API trả về
+
+      if (!response || !response.user) {
+        throw new Error("Update failed: No user data returned.");
+      }
 
       setUser((prev) => ({ ...prev, ...response.user }));
-      setOriginalData(response.user); // Cập nhật dữ liệu gốc sau khi thành công
+      setOriginalData(response.user);
 
       if (password) {
         logout();
@@ -72,7 +83,8 @@ export const useSettings = () => {
       } else {
         navigate("/settings");
       }
-    } catch {
+    } catch (error) {
+      console.error("Update error:", error);
       setError("Update failed. Please try again.");
     }
   };
