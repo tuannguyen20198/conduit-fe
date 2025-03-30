@@ -1,17 +1,10 @@
-interface ArticleFormData {
+export interface ArticleFormData {
+  slug: string;
   title: string;
   description: string;
-  body: string;
+  createdAt: string;
+  author: Author;
+  favorited: boolean;
+  favoritesCount: number;
+  tagList: string[];
 }
-
-interface ArticleFormProps {
-  handleSubmit: UseFormHandleSubmit<ArticleFormData>;
-  register: UseFormRegister<ArticleFormData>;
-  onSubmit: (data: ArticleFormData) => void;
-  tags: string[];
-  setTags: (tags: string[]) => void;
-  mutation: {
-    isPending: boolean;
-  };
-}
-export type AritcleProps = AritcleFromProps;

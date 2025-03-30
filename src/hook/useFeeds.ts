@@ -1,92 +1,163 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getArticles, likeArticle, unlikeArticle } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
-import { use } from "react";
+import { ArticleFormData } from "@/interfaces/article";
+import React, { useEffect, useState } from "react";
+import { useTags } from "./useTags";
+import {
+  favoriteArticle,
+  followUser,
+  getArticles,
+  unfavoriteArticle,
+  unfollowUser,
+} from "@/lib/api";
 
-export const useFeed = (
-  activeTab: "your" | "global",
-  selectedTags: string[] = [],
-  page: number = 1,
-  limit: number = 5
-) => {
-  const offset = (page - 1) * limit;
-  const queryClient = useQueryClient();
-  const { user: authToken } = useAuth(); // Lấy token user
+const useFeeds = () => {
+  const [activeTab, setActiveTab] = useState<"your" | "global">("global");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [articles, setArticles] = useState<ArticleFormData[]>([]);
+  const [totalArticles, setTotalArticles] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const shouldFetchFeed = activeTab === "your" && !!authToken;
-
-  const {
-    data: articles,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["articles", activeTab, selectedTags, page],
-    queryFn: () =>
-      getArticles({
-        ...(shouldFetchFeed ? { feed: true } : {}), // Chỉ fetch feed nếu user đăng nhập
-        ...(selectedTags.length > 0 ? { tag: selectedTags.join(",") } : {}),
-        limit,
-        offset,
-      }),
-    enabled: activeTab === "global" || shouldFetchFeed, // Chỉ fetch nếu là Global hoặc có user đăng nhập
-    initialData: { articles: [], articlesCount: 0 },
-  });
-
-  // Cập nhật trạng thái like ngay lập tức
-  const updateArticleOptimistically = (slug: string, favorited: boolean) => {
-    queryClient.setQueryData(
-      ["articles", activeTab, selectedTags, page],
-      (oldData: any) => {
-        if (!oldData) return oldData;
-        return {
-          ...oldData,
-          articles: oldData.articles.map((article: any) =>
-            article.slug === slug
-              ? {
-                  ...article,
-                  favorited,
-                  favoritesCount: article.favoritesCount + (favorited ? 1 : -1),
-                }
-              : article
-          ),
-        };
-      }
+  const articlesPerPage = 10;
+  const { user: authToken } = useAuth();
+  const { data: tags } = useTags();
+  const pageCount = Math.max(1, Math.ceil(totalArticles / articlesPerPage));
+  useEffect(() => {
+    const storedLikes = JSON.parse(
+      localStorage.getItem("likedArticles") || "{}"
     );
+    setArticles((prevArticles) =>
+      prevArticles.map((article) => ({
+        ...article,
+        favorited: storedLikes[article.slug] ?? article.favorited,
+      }))
+    );
+  }, []);
+
+  const fetchArticles = async () => {
+    if (activeTab === "your" && !authToken) {
+      setArticles([]);
+      setTotalArticles(0);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await getArticles({
+        feed: activeTab === "your" ? true : undefined,
+        tag: selectedTags.length ? selectedTags.join(",") : undefined,
+        offset: (currentPage - 1) * articlesPerPage,
+        limit: articlesPerPage,
+      });
+
+      const storedLikes = JSON.parse(
+        localStorage.getItem("likedArticles") || "{}"
+      );
+      const filteredArticles =
+        activeTab === "your"
+          ? response.articles.filter(
+              (article: { author: { following: any } }) =>
+                article.author.following
+            )
+          : response.articles;
+
+      setArticles(
+        filteredArticles.map(
+          (article: { slug: string | number; favorited: any }) => ({
+            ...article,
+            favorited: storedLikes[article.slug] ?? article.favorited,
+          })
+        )
+      );
+      setTotalArticles(response.articlesCount); // Cập nhật đúng tổng số bài viết
+    } catch (err) {
+      setError("Failed to load articles");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const likeMutation = useMutation({
-    mutationFn: (slug: string) => likeArticle(slug),
-    onMutate: (slug: string) => updateArticleOptimistically(slug, true),
-    onError: (_, slug) => updateArticleOptimistically(slug, false),
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["articles", activeTab, ...selectedTags, page],
-      });
-    },
-  });
+  useEffect(() => {
+    fetchArticles();
+  }, [activeTab, selectedTags, currentPage, authToken]);
 
-  const unlikeMutation = useMutation({
-    mutationFn: (slug: string) => unlikeArticle(slug),
-    onMutate: (slug: string) => updateArticleOptimistically(slug, false),
-    onError: (_, slug) => updateArticleOptimistically(slug, true),
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["articles", activeTab, ...selectedTags, page],
-      });
-    },
-  });
+  const handlePageClick = ({ selected }: { selected: number }) => {
+    setCurrentPage(selected + 1);
+  };
 
+  const handleLike = async (slug: string, favorited: boolean) => {
+    const updatedFavorited = !favorited;
+    setArticles((prevArticles) =>
+      prevArticles.map((article) =>
+        article.slug === slug
+          ? {
+              ...article,
+              favorited: updatedFavorited,
+              favoritesCount: updatedFavorited
+                ? article.favoritesCount + 1
+                : article.favoritesCount - 1,
+            }
+          : article
+      )
+    );
+
+    const storedLikes = JSON.parse(
+      localStorage.getItem("likedArticles") || "{}"
+    );
+    storedLikes[slug] = updatedFavorited;
+    localStorage.setItem("likedArticles", JSON.stringify(storedLikes));
+
+    try {
+      updatedFavorited
+        ? await favoriteArticle(slug)
+        : await unfavoriteArticle(slug);
+    } catch (err) {
+      console.error("Error updating favorite status", err);
+    }
+  };
+
+  const handleFollow = async (username: string, following: boolean) => {
+    try {
+      const updatedUser = following
+        ? await unfollowUser(username)
+        : await followUser(username);
+      setArticles((prevArticles) =>
+        prevArticles.map((article) =>
+          article.author.username === username
+            ? {
+                ...article,
+                author: { ...article.author, following: updatedUser.following },
+              }
+            : article
+        )
+      );
+    } catch (err) {
+      console.error("Error updating follow status", err);
+    }
+  };
   return {
-    articles,
-    isLoading,
-    error,
-    likeMutation,
-    unlikeMutation,
-    authToken,
-    selectedTags,
-    page,
-    limit,
     activeTab,
-    user: authToken,
+    authToken,
+    tags,
+    setActiveTab,
+    selectedTags,
+    setSelectedTags,
+    currentPage,
+    setCurrentPage,
+    articles,
+    setArticles,
+    totalArticles,
+    setTotalArticles,
+    isLoading,
+    setIsLoading,
+    error,
+    setError,
+    pageCount,
+    handlePageClick,
+    handleLike,
+    handleFollow,
   };
 };
+
+export default useFeeds;

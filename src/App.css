@@ -21,9 +21,11 @@
   transition: background 0.3s ease-in-out;
 }
 
-.pagination .page-link:hover {
-  background: #5cb85c;
-  color: white;
+/* .pagination .page-link:hover {
+  outline: none;
+} */
+.pagination .page-link:focus {
+  outline: none;
 }
 
 .pagination .active .page-link {
@@ -36,4 +38,11 @@
   color: #ccc;
   pointer-events: none;
   border-color: #ddd;
+}
+
+button:focus,
+button:active {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
 }

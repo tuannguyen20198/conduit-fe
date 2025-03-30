@@ -1,50 +1,23 @@
-import React, { useState } from "react";
-import { useFeed } from "@/hook/useFeeds";
+import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import { Link } from "react-router-dom";
 import ReactPaginate from "react-paginate";
-import { useTags } from "@/hook/useTags";
-import { useAuth } from "@/context/AuthContext";
+import useFeeds from "@/hook/useFeeds";
 
-const Feed = () => {
-  const [activeTab, setActiveTab] = useState<"your" | "global">("global");
-  const [selectedTag, setSelectedTag] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const articlesPerPage = 10;
-
-  const { user: authToken } = useAuth();
-
-  // Chỉ gọi API khi user đăng nhập nếu chọn tab "your"
-  const { articles, isLoading, likeMutation, unlikeMutation, error } = useFeed(
-    activeTab === "your" ? (authToken ? "your" : "global") : "global",
-    selectedTag,
-    currentPage,
-    articlesPerPage
-  );
-
-  const { data: tags } = useTags();
-  const totalArticles = articles?.articlesCount || 0;
-  const pageCount = Math.max(1, Math.ceil(totalArticles / articlesPerPage));
-
-  const handlePageClick = ({ selected }: { selected: number }) => {
-    setCurrentPage(selected + 1);
-  };
-
-  const handleLikeToggle = (slug: string, isFavorited: boolean) => {
-    if (!authToken) {
-      alert("Please log in to like articles.");
-      return;
-    }
-    if (isFavorited) {
-      unlikeMutation.mutate(slug);
-    } else {
-      likeMutation.mutate(slug);
-    }
-  };
-
-  const handleTagClick = (tag: string) => {
-    setSelectedTag([tag]); // Only allow one tag selection at a time
-  };
+const Feed: React.FC = () => {
+  const {
+    authToken,
+    activeTab,
+    setActiveTab,
+    selectedTags,
+    setSelectedTags,
+    setCurrentPage,
+    articles,
+    isLoading,
+    error,
+    pageCount,
+    handlePageClick,
+    handleLike, tags } = useFeeds();
 
   return (
     <div className="container page">
@@ -55,10 +28,11 @@ const Feed = () => {
               {authToken && (
                 <li className="nav-item">
                   <button
-                    className={`nav-link ${activeTab === "your" ? "active" : ""}`}
+                    className={`nav-link ${activeTab === "your" ? "active" : ""
+                      }`}
                     onClick={() => {
                       setActiveTab("your");
-                      setSelectedTag([]);
+                      setSelectedTags([]);
                       setCurrentPage(1);
                     }}
                   >
@@ -68,10 +42,11 @@ const Feed = () => {
               )}
               <li className="nav-item">
                 <button
-                  className={`nav-link ${activeTab === "global" ? "active" : ""}`}
+                  className={`nav-link ${activeTab === "global" ? "active" : ""
+                    }`}
                   onClick={() => {
                     setActiveTab("global");
-                    setSelectedTag([]);
+                    setSelectedTags([]);
                     setCurrentPage(1);
                   }}
                 >
@@ -82,78 +57,83 @@ const Feed = () => {
           </div>
 
           {isLoading && <p>Loading articles...</p>}
-          {error && <p className="error-message">Failed to load articles.</p>}
+          {error && <p className="error-message">{error}</p>}
+          {!isLoading && articles.length === 0 && <p>No articles found.</p>}
 
-          {!isLoading && articles?.articles?.length === 0 && <p>No articles in this section.</p>}
-          {articles?.articles?.map((article: any) => (
-            (
-              <div key={article.slug} className="article-preview">
-                <div className="article-meta">
+          {articles.map((article) => (
+            <div key={article.slug} className="article-preview">
+              <div className="article-meta d-flex justify-content-between align-items-center">
+                <div className="d-flex align-items-center">
                   <Link to={`/profile/${article.author.username}`}>
-                    <img src={article.author.image} alt={article.author.username} />
+                    <img
+                      src={article.author.image}
+                      alt={article.author.username}
+                    />
                   </Link>
                   <div className="info">
-                    <Link to={`/profile/${article.author.username}`} className="author">
+                    <Link
+                      to={`/profile/${article.author.username}`}
+                      className="author"
+                    >
                       {article.author.username}
                     </Link>
-                    <span className="date">{new Date(article.createdAt).toDateString()}</span>
+                    <span className="date">
+                      {new Date(article.createdAt).toDateString()}
+                    </span>
                   </div>
-                  <button className="btn btn-outline-primary btn-sm pull-xs-right" onClick={() => handleLikeToggle(article.slug, article.favorited)}>
-                    <i className="ion-heart" /> {article.favoritesCount}
+                  <button
+                    className={`btn btn-sm border-0 shadow-none pull-xs-right focus:ring-0 outline-none ${article.favorited ? "btn-primary" : "btn-outline-primary"
+                      }`}
+                    onClick={() => handleLike(article.slug, article.favorited)}
+                  >
+                    <i className="ion-heart"></i> {article.favoritesCount}
                   </button>
                 </div>
-                <Link to={`/article/${article.slug}`} className="preview-link">
-                  <h1>{article.title}</h1>
-                  <p>{article.description}</p>
-                  <span>Read more...</span>
-                  <ul className="tag-list">
-                    {article.tagList.length > 0 ? (
-                      article.tagList.map((tag: string) => (
-                        <li
-                          key={tag}
-                          className={`tag-default tag-pill tag-outline ${selectedTag.includes(tag) ? "active" : ""
-                            }`}
-                          onClick={() => handleTagClick(tag)}
-                        >
-                          {tag}
-                        </li>
-                      ))
-                    ) : (
-                      <p>No tags available</p>
-                    )}
-                  </ul>
-                </Link>
+                <div></div>
               </div>
-            )
+              <Link to={`/article/${article.slug}`} className="preview-link">
+                <h1>{article.title}</h1>
+                <p>{article.description}</p>
+                <span>Read more...</span>
+                <ul className="tag-list">
+                  {article.tagList.map((tag, index) => (
+                    <li
+                      key={index}
+                      className="tag-default tag-pill tag-outline"
+                    >
+                      {tag}
+                    </li>
+                  ))}
+                </ul>
+              </Link>
+            </div>
           ))}
-
           {pageCount > 1 && (
             <ReactPaginate
-              previousLabel={"← Previous"}
-              nextLabel={"Next →"}
+              previousLabel={"←"}
+              nextLabel={"→"}
               breakLabel={"..."}
               pageCount={pageCount}
-              marginPagesDisplayed={2}
-              pageRangeDisplayed={3}
+              marginPagesDisplayed={1}
+              pageRangeDisplayed={2}
               onPageChange={handlePageClick}
-              containerClassName={"pagination"}
-              pageClassName={"page-item"}
-              pageLinkClassName={"page-link"}
-              previousClassName={"page-item"}
-              nextClassName={"page-item"}
-              previousLinkClassName={"page-link"}
-              nextLinkClassName={"page-link"}
-              activeClassName={"active"}
-              disabledClassName={"disabled"}
+              containerClassName="pagination"
+              pageClassName="page-item"
+              pageLinkClassName="page-link"
+              previousClassName="page-item"
+              nextClassName="page-item"
+              previousLinkClassName="hidden"
+              nextLinkClassName="hidden"
+              activeClassName="active"
+              disabledClassName="disabled"
             />
           )}
         </div>
-
         <div className="col-md-3 order-md-last cursor-pointer">
           <Sidebar
             tags={tags || []}
-            selectedTags={selectedTag}
-            setSelectedTags={setSelectedTag}
+            selectedTags={selectedTags}
+            setSelectedTags={setSelectedTags}
           />
         </div>
       </div>

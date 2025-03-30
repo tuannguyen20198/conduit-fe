@@ -123,12 +123,22 @@ export const createArticle = async (article: {
   }
 };
 
-export const likeArticle = async (slug: string) => {
-  const response = await api.post(`/articles/${slug}/favorite`);
-  return response.data.article;
+export const followUser = async (username: string) => {
+  const response = await api.post(`/profiles/${username}/follow`);
+  return response.data;
 };
 
-export const unlikeArticle = async (slug: string) => {
+export const unfollowUser = async (username: string) => {
+  const response = await api.delete(`/profiles/${username}/follow`);
+  return response.data;
+};
+
+export const favoriteArticle = async (slug: string) => {
+  const response = await api.post(`/articles/${slug}/favorite`);
+  return response.data;
+};
+
+export const unfavoriteArticle = async (slug: string) => {
   const response = await api.delete(`/articles/${slug}/favorite`);
-  return response.data.article;
+  return response.data;
 };
