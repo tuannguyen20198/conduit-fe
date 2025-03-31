@@ -9,6 +9,7 @@ import {
   unfavoriteArticle,
   unfollowUser,
 } from "@/lib/api";
+import { useNavigate } from "react-router-dom";
 
 const useFeeds = () => {
   const [activeTab, setActiveTab] = useState<"your" | "global">("global");
@@ -23,6 +24,7 @@ const useFeeds = () => {
   const { user: authToken } = useAuth();
   const { data: tags } = useTags();
   const pageCount = Math.max(1, Math.ceil(totalArticles / articlesPerPage));
+  const navigate = useNavigate();
   useEffect(() => {
     const storedLikes = JSON.parse(
       localStorage.getItem("likedArticles") || "{}"
@@ -100,6 +102,7 @@ const useFeeds = () => {
   const handleLike = async (slug: string, favorited: boolean) => {
     if (!user) {
       alert("Bạn cần đăng nhập để like bài viết!");
+      navigate("/login");
       return;
     }
 
