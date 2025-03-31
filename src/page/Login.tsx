@@ -6,7 +6,7 @@ import { loginUser } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -14,7 +14,7 @@ const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const { user } = useAuth();
   const methods = useForm();
-  
+
   const { mutate, isPending, error } = useMutation({
     mutationFn: loginUser,
     onSuccess: (user) => {
@@ -49,7 +49,7 @@ const Login = () => {
           <div className="col-md-6 offset-md-3 col-xs-12">
             <h1 className="text-xs-center">Sign in</h1>
             <p className="text-xs-center">
-              <a href="/register">Need an account?</a>
+              <Link to="/register">Need an account?</Link>
             </p>
 
             {error && (
@@ -60,28 +60,21 @@ const Login = () => {
 
             <FormProvider {...methods}>
               <form onSubmit={handleLogin}>
-                <fieldset className="form-group">
-                  <FormInput
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    value={formData.email}
-                    onChange={handleChange}  // This will now handle both input and textarea events
-                  />
-                </fieldset>
-                <fieldset className="form-group">
-                  <FormInput
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={handleChange}  // This will now handle both input and textarea events
-                  />
-                </fieldset>
-                <button className="btn btn-lg btn-primary pull-xs-right" disabled={isPending}>
-                  {isPending ? <SubmitButton label="Sign in..."/>: <SubmitButton label="Sign in"/>}
-                </button>
-                
+                <FormInput
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={handleChange}  // This will now handle both input and textarea events
+                />
+                <FormInput
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}  // This will now handle both input and textarea events
+                />
+                {isPending ? <SubmitButton label="Sign in..." /> : <SubmitButton label="Sign in" />}
               </form>
             </FormProvider>
           </div>

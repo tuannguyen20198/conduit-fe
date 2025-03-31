@@ -1,36 +1,14 @@
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import FormInput from "@/component/FormInput";
 import { useAuth } from "@/context/AuthContext";
+import { useMutation } from "@tanstack/react-query";
 import { registerUser } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
+import { FormProvider, useForm } from "react-hook-form";
+import SubmitButton from "@/component/SubmitButton";
+import useRegister from "@/hook/useRegister";
 
 const Register = () => {
-  const navigate = useNavigate();
-  const { register } = useAuth();
-  const [form, setForm] = useState({ username: "", email: "", password: "" });
-  const [errors, setErrors] = useState<string[]>([]);
-
-  const { mutate, isPending } = useMutation({
-    mutationFn: registerUser,
-    onSuccess: (user) => {
-      register(user); //  Cập nhật context ngay khi đăng ký thành công
-      navigate("/");
-    },
-    onError: (error: any) => {
-        if (error.response?.data?.errors) {
-          const errorsObj = error.response.data.errors;
-          setErrors(Object.values(errorsObj).flat() as string[]);
-        } else {
-          setErrors(["Đăng ký thất bại, vui lòng thử lại!"]);
-        }
-      },      
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors([]);
-    mutate(form);
-  };
+  const {methods, handleSubmit,isPending} = useRegister();
 
   return (
     <div className="auth-page">
@@ -43,46 +21,20 @@ const Register = () => {
             </p>
 
             {/* Hiển thị lỗi từ API */}
-            {errors.length > 0 && (
+            {methods.formState.errors.server && (
               <ul className="error-messages">
-                {errors.map((err, index) => (
-                  <li key={index}>{err}</li>
-                ))}
+                <li>{String(methods.formState.errors.server.message)}</li>
               </ul>
             )}
 
-            <form onSubmit={handleSubmit}>
-              <fieldset className="form-group">
-                <input
-                  className="form-control form-control-lg"
-                  type="text"
-                  placeholder="Username"
-                  value={form.username}
-                  onChange={(e) => setForm({ ...form, username: e.target.value })}
-                />
-              </fieldset>
-              <fieldset className="form-group">
-                <input
-                  className="form-control form-control-lg"
-                  type="email"
-                  placeholder="Email"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                />
-              </fieldset>
-              <fieldset className="form-group">
-                <input
-                  className="form-control form-control-lg"
-                  type="password"
-                  placeholder="Password"
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                />
-              </fieldset>
-              <button className="btn btn-lg btn-primary pull-xs-right" disabled={isPending}>
-                {isPending ? "Signing up..." : "Sign up"}
-              </button>
-            </form>
+            <FormProvider {...methods}>
+              <form onSubmit={handleSubmit}>
+                <FormInput type="text" name="username" placeholder="Username" />
+                <FormInput type="email" name="email" placeholder="Email" />
+                <FormInput type="password" name="password" placeholder="Password" />
+                {isPending ? <SubmitButton label="Sign in..." /> : <SubmitButton label="Sign in" />}
+              </form>
+            </FormProvider>
           </div>
         </div>
       </div>
