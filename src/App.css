@@ -82,3 +82,10 @@ button:active {
   border-color: #007bff;
   outline: none;
 }
+
+textarea {
+  height: 200px !important;
+  min-height: 200 !important;
+  width: 100% !important;
+  resize: vertical !important; /* Cho phép kéo */
+}

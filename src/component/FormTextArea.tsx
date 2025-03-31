@@ -1,9 +1,9 @@
-import { FormTextAreaProps } from "@/interfaces/form-textarea";
+import { FormInputProps } from "@/interfaces/form-input";
 import { useFormContext } from "react-hook-form";
 
 
 
-const FormTextArea = ({ name, placeholder, rows = 8 }: FormTextAreaProps) => {
+const FormTextArea = ({ name, placeholder, rows }: FormInputProps) => {
   const {
     register,
     formState: { errors },
@@ -13,8 +13,9 @@ const FormTextArea = ({ name, placeholder, rows = 8 }: FormTextAreaProps) => {
     <fieldset className="form-group">
       <textarea
         {...register(name, { required: `${name} is required` })}
-        className="form-control"
-        rows={rows}
+        // className="form-control"
+        rows={100}
+        style={{ height: "600px !important", width: "100% !important", minHeight: "500px !important" }} 
         placeholder={placeholder}
       />
       {errors[name] && (

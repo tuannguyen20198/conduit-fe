@@ -24,7 +24,7 @@ const ArticleForm = ({ onSubmit, apiErrors }: any) => {
 
         <FormInput name="title" placeholder="Article Title" />
         <FormInput name="description" placeholder="What's this article about?" />
-        <FormInput name="body" placeholder="Write your article (in markdown)" type="textarea" />
+        <FormInput name="body" placeholder="Write your article (in markdown)" type="textarea"/>
 
         <fieldset className="form-group">
           <FormTags onTagsChange={handleTagsChange} setError={methods.setError} clearErrors={methods.clearErrors} />
