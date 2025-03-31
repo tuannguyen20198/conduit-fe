@@ -19,7 +19,9 @@ const Feed: React.FC = () => {
     error,
     pageCount,
     handlePageClick,
-    handleLike, tags } = useFeeds();
+    handleLike,
+    tags,
+    currentPage } = useFeeds();
 
   return (
     <div className="container page">
@@ -103,6 +105,7 @@ const Feed: React.FC = () => {
                   </ul>
                 </Link>
               </div>
+
             ))}
         </div>
         <div className="col-md-3 order-md-last cursor-pointer">
@@ -117,26 +120,28 @@ const Feed: React.FC = () => {
           />
         </div>
       </div>
-      {pageCount > 1 && (
-            <ReactPaginate
-              previousLabel={"←"}
-              nextLabel={"→"}
-              breakLabel={"..."}
-              pageCount={pageCount}
-              marginPagesDisplayed={1}
-              pageRangeDisplayed={2}
-              onPageChange={handlePageClick}
-              containerClassName="pagination"
-              pageClassName="page-item"
-              pageLinkClassName="page-link"
-              previousClassName="page-item"
-              nextClassName="page-item"
-              previousLinkClassName="hidden"
-              nextLinkClassName="hidden"
-              activeClassName="active"
-              disabledClassName="disabled"
-            />
-          )}
+      {!isLoading &&
+        <ReactPaginate
+          previousLabel={"←"}
+          nextLabel={"→"}
+          breakLabel={"..."}
+          pageCount={pageCount}
+          marginPagesDisplayed={1}
+          pageRangeDisplayed={2}
+          onPageChange={handlePageClick}
+          forcePage={currentPage - 1} // ✅ Giúp ReactPaginate cập nhật ngay lập tức
+          containerClassName="pagination"
+          pageClassName="page-item"
+          pageLinkClassName="page-link"
+          previousClassName="page-item"
+          nextClassName="page-item"
+          previousLinkClassName="hidden"
+          nextLinkClassName="hidden"
+          activeClassName="active"
+          disabledClassName="disabled"
+        />
+      }
+
     </div>
   );
 };

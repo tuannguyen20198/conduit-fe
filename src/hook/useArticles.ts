@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
-const useArticles = () => {
+const useArticles = (refreshArticles?: () => void) => {
   const {
     register,
     handleSubmit,
@@ -26,6 +26,14 @@ const useArticles = () => {
     if (tags.length > 0) clearErrors("tags"); // ✅ Xóa lỗi nếu có
   };
 
+  const handlePageClick = (event: { selected: number }) => {
+    const newPage = event.selected + 1;
+
+    newPage;
+
+    // ✅ Đảm bảo fetch lại dữ liệu ngay lập tức khi page thay đổi
+    createArticle(newPage);
+  };
   const onSubmit = async (data: any) => {
     console.log("🚀 Dữ liệu form trước khi gửi:", data);
     if (!data.tags || data.tags.length === 0) {
@@ -36,10 +44,18 @@ const useArticles = () => {
   };
 
   const onSubmitArticles = async (data: any) => {
-    setApiErrors([]);
-    createArticle(data);
-    alert("Bài viết đã được đăng");
-    navigate("/");
+    try {
+      await createArticle(data);
+      alert("Bài viết đã được đăng");
+
+      // ✅ Cập nhật lại danh sách bài viết mà không reload
+      refreshArticles?.();
+
+      // ✅ Điều hướng về trang chủ mà không refresh
+      navigate("/", { replace: true });
+    } catch (err: any) {
+      setApiErrors([err.message || "Đã xảy ra lỗi!"]);
+    }
   };
   return {
     register,
@@ -47,6 +63,7 @@ const useArticles = () => {
     onSubmit,
     user,
     onSubmitArticles,
+    handlePageClick,
     errors,
     apiErrors,
     setApiErrors,
