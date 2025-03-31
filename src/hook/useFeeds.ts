@@ -56,7 +56,7 @@ const useFeeds = () => {
       return;
     }
 
-    // setIsLoading(true);
+    setIsLoading(true);
     const startTime = Date.now(); // Bắt đầu tính thời gian
     try {
       const response = await getArticles({
@@ -89,12 +89,12 @@ const useFeeds = () => {
     } catch (err) {
       setError("Failed to load articles");
     } finally {
-      // const elapsedTime = Date.now() - startTime;
-      // const minLoadingTime = 500; // Thời gian tối thiểu để spinner hiển thị
-      // setTimeout(
-      //   () => setIsLoading(false),
-      //   Math.max(0, minLoadingTime - elapsedTime)
-      // );
+      const elapsedTime = Date.now() - startTime;
+      const minLoadingTime = 500; // Thời gian tối thiểu để spinner hiển thị
+      setTimeout(
+        () => setIsLoading(false),
+        Math.max(0, minLoadingTime - elapsedTime)
+      );
     }
   };
 
