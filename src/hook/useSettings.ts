@@ -68,13 +68,20 @@ export const useSettings = () => {
 
     try {
       const response = await updateUser(finalData);
-      console.log("API response:", response); // Kiểm tra API trả về
+      console.log("✅ API response:", response);
 
       if (!response || !response.user) {
         throw new Error("Update failed: No user data returned.");
       }
 
-      setUser((prev) => ({ ...prev, ...response.user }));
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      const updatedUser = { ...storedUser, ...response.user };
+
+      // 🛠 Lưu user vào localStorage
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+
+      // 🛠 Cập nhật state trong context
+      setUser(updatedUser);
       setOriginalData(response.user);
 
       if (password) {
@@ -84,7 +91,7 @@ export const useSettings = () => {
         navigate("/settings");
       }
     } catch (error) {
-      console.error("Update error:", error);
+      console.error("❌ Update error:", error);
       setError("Update failed. Please try again.");
     }
   };
