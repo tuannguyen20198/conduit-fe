@@ -89,3 +89,10 @@ textarea {
   width: 100% !important;
   resize: vertical !important; /* Cho phép kéo */
 }
+.mdx-editor {
+  border: 1px solid #ccc;
+  padding: 10px;
+  min-height: 300px;
+  background: white;
+  border: none !important;
+}

@@ -5,11 +5,11 @@ import { useFormContext } from "react-hook-form";
 
 const SubmitButton = ({ label }: SubmitButtonProps) => {
   const {
-    formState: { isValid },
+    formState: {  },
   } = useFormContext();
 
   return (
-    <button className="btn btn-lg btn-primary" type="submit" disabled={!isValid}>
+    <button className="btn btn-lg btn-primary" type="submit" >
       {label}
     </button>
   );

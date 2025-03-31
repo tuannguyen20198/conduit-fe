@@ -21,6 +21,8 @@ const useArticles = (refreshArticles?: () => void) => {
   const [tags, setTags] = useState<string[]>([]); // State lưu tags
   const navigate = useNavigate();
   const { user } = useAuth();
+  const methods = useForm();
+  const [submittedContent, setSubmittedContent] = useState("");
   const handleTagsChange = (tags: string[]) => {
     setValue("tags", tags); // ✅ Cập nhật `tags` vào form
     if (tags.length > 0) clearErrors("tags"); // ✅ Xóa lỗi nếu có
@@ -36,11 +38,17 @@ const useArticles = (refreshArticles?: () => void) => {
   };
   const onSubmit = async (data: any) => {
     console.log("🚀 Dữ liệu form trước khi gửi:", data);
+
     if (!data.tags || data.tags.length === 0) {
-      setError("tags", { type: "required", message: "Tags is required" });
+      methods.setError("tags", {
+        type: "required",
+        message: "Tags is required",
+      });
       return;
     }
-    console.log("Final Payload:", data); // ✅ Kiểm tra dữ liệu gửi đi
+
+    console.log("✅ Final Payload:", data);
+    setSubmittedContent(data.markdown); // Hiển thị markdown sau khi submit
   };
 
   const onSubmitArticles = async (data: any) => {
