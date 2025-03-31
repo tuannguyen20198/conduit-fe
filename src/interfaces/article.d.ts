@@ -7,6 +7,7 @@ export interface ArticleFormData {
   favorited: boolean;
   favoritesCount: number;
   tagList: string[];
+  likedBy: string[];
 }
 
 export interface AritcleProps {

@@ -86,7 +86,7 @@ const Feed: React.FC = () => {
                     </div>
                     <button
                       className={`btn btn-sm border-0 shadow-none pull-xs-right focus:ring-0 outline-none ${article.favorited ? "btn-primary" : "btn-outline-primary"}`}
-                      onClick={() => handleLike(article.slug, article.favorited)}
+                      onClick={() => handleLike(article.slug, article.favorited, article.favoritesCount)}
                     >
                       <i className="ion-heart"></i> {article.favoritesCount}
                     </button>

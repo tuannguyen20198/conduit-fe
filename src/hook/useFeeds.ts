@@ -26,16 +26,28 @@ const useFeeds = () => {
   const pageCount = Math.max(1, Math.ceil(totalArticles / articlesPerPage));
   const navigate = useNavigate();
   useEffect(() => {
+    if (!user) return; // Nếu user không tồn tại, không thực hiện gì
+
+    // Lấy danh sách người dùng đã like từ localStorage
     const storedLikes = JSON.parse(
       localStorage.getItem("likedArticles") || "{}"
     );
+
     setArticles((prevArticles) =>
       prevArticles.map((article) => ({
         ...article,
-        favorited: storedLikes[article.slug] ?? article.favorited,
+        // Cập nhật lại trạng thái "favorited" và "favoritesCount"
+        favorited:
+          storedLikes[article.slug]?.includes(user.username) ||
+          article.favorited,
+        // Đảm bảo favoritesCount luôn là số hợp lệ, tránh NaN
+        favoritesCount:
+          storedLikes[article.slug]?.length || article.favoritesCount || 0,
+        // Lưu lại danh sách người đã like (likedBy)
+        likedBy: storedLikes[article.slug] || article.likedBy || [],
       }))
     );
-  }, []);
+  }, [user]); // Chạy lại mỗi khi user thay đổi
 
   const fetchArticles = async () => {
     if (activeTab === "your" && !authToken) {
@@ -44,7 +56,7 @@ const useFeeds = () => {
       return;
     }
 
-    setIsLoading(true);
+    // setIsLoading(true);
     const startTime = Date.now(); // Bắt đầu tính thời gian
     try {
       const response = await getArticles({
@@ -77,13 +89,12 @@ const useFeeds = () => {
     } catch (err) {
       setError("Failed to load articles");
     } finally {
-      const elapsedTime = Date.now() - startTime;
-      const minLoadingTime = 500; // Thời gian tối thiểu để spinner hiển thị
-
-      setTimeout(
-        () => setIsLoading(false),
-        Math.max(0, minLoadingTime - elapsedTime)
-      );
+      // const elapsedTime = Date.now() - startTime;
+      // const minLoadingTime = 500; // Thời gian tối thiểu để spinner hiển thị
+      // setTimeout(
+      //   () => setIsLoading(false),
+      //   Math.max(0, minLoadingTime - elapsedTime)
+      // );
     }
   };
 
@@ -99,49 +110,81 @@ const useFeeds = () => {
     setCurrentPage(selected + 1);
   };
 
-  const handleLike = async (slug: string, favorited: boolean) => {
+  const handleLike = async (
+    slug: string,
+    favorited: boolean,
+    favoritesCount: number
+  ) => {
     if (!user) {
       alert("Bạn cần đăng nhập để like bài viết!");
+      localStorage.setItem("redirectAfterLogin", window.location.pathname);
       navigate("/login");
       return;
     }
 
-    const updatedFavorited = !favorited;
-    const prevArticles = [...articles]; // Lưu lại trạng thái trước đó
+    // Đảm bảo favoritesCount là số hợp lệ, nếu không thì gán là 0
+    const validFavoritesCount = isNaN(favoritesCount) ? 0 : favoritesCount;
 
-    // Cập nhật UI tạm thời
-    setArticles((prevArticles) =>
-      prevArticles.map((article) =>
+    const storedLikes = JSON.parse(
+      localStorage.getItem("likedArticles") || "{}"
+    );
+    const currentLikes = storedLikes[slug] || [];
+
+    // Kiểm tra nếu người dùng đã like rồi thì không thay đổi gì
+    const updatedFavorited = !currentLikes.includes(user.username); // Nếu user chưa like, thì like, ngược lại thì unlike
+
+    // Tính toán lại số lượng like
+    const updatedFavoritesCount = updatedFavorited
+      ? validFavoritesCount + 1
+      : Math.max(validFavoritesCount - 1, 0);
+
+    // Thêm hoặc xóa người dùng khỏi danh sách likedBy
+    const updatedLikedBy = updatedFavorited
+      ? [...currentLikes, user.username]
+      : currentLikes.filter((username: string) => username !== user.username);
+
+    // Cập nhật lại localStorage
+    storedLikes[slug] = updatedLikedBy;
+    localStorage.setItem("likedArticles", JSON.stringify(storedLikes));
+
+    // Cập nhật lại UI với trạng thái mới
+    setArticles((prev) =>
+      prev.map((article) =>
         article.slug === slug
           ? {
               ...article,
               favorited: updatedFavorited,
-              favoritesCount: updatedFavorited
-                ? article.favoritesCount + 1
-                : article.favoritesCount - 1,
+              favoritesCount: updatedFavoritesCount,
+              likedBy: updatedLikedBy,
             }
           : article
       )
     );
 
     try {
+      // Gửi yêu cầu đến API để cập nhật trạng thái thích/unlike
       if (updatedFavorited) {
-        await favoriteArticle(slug);
+        await favoriteArticle(slug); // Thực hiện hành động "like"
       } else {
-        await unfavoriteArticle(slug);
+        await unfavoriteArticle(slug); // Thực hiện hành động "unlike"
       }
-
-      // Cập nhật localStorage
-      const storedLikes = JSON.parse(
-        localStorage.getItem("likedArticles") || "{}"
-      );
-      storedLikes[slug] = updatedFavorited;
-      localStorage.setItem("likedArticles", JSON.stringify(storedLikes));
     } catch (err) {
       console.error("Lỗi khi cập nhật trạng thái yêu thích:", err);
 
-      // Nếu lỗi, hoàn tác cập nhật UI
-      setArticles(prevArticles);
+      // Nếu có lỗi, quay lại trạng thái ban đầu
+      setArticles((prev) =>
+        prev.map((article) =>
+          article.slug === slug
+            ? {
+                ...article,
+                favorited: favorited, // Quay lại trạng thái ban đầu
+                favoritesCount: favorited
+                  ? validFavoritesCount + 1
+                  : Math.max(validFavoritesCount - 1, 0),
+              }
+            : article
+        )
+      );
     }
   };
 
