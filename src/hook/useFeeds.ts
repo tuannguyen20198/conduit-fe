@@ -43,6 +43,7 @@ const useFeeds = () => {
     }
 
     setIsLoading(true);
+    const startTime = Date.now(); // Bắt đầu tính thời gian
     try {
       const response = await getArticles({
         feed: activeTab === "your" ? true : undefined,
@@ -74,7 +75,13 @@ const useFeeds = () => {
     } catch (err) {
       setError("Failed to load articles");
     } finally {
-      setIsLoading(false);
+      const elapsedTime = Date.now() - startTime;
+      const minLoadingTime = 500; // Thời gian tối thiểu để spinner hiển thị
+
+      setTimeout(
+        () => setIsLoading(false),
+        Math.max(0, minLoadingTime - elapsedTime)
+      );
     }
   };
 

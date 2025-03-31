@@ -3,6 +3,7 @@ import Sidebar from "./Sidebar";
 import { Link } from "react-router-dom";
 import ReactPaginate from "react-paginate";
 import useFeeds from "@/hook/useFeeds";
+import Spinner from "./Spinner";
 
 const Feed: React.FC = () => {
   const {
@@ -14,6 +15,7 @@ const Feed: React.FC = () => {
     setCurrentPage,
     articles,
     isLoading,
+    setIsLoading,
     error,
     pageCount,
     handlePageClick,
@@ -56,59 +58,66 @@ const Feed: React.FC = () => {
             </ul>
           </div>
 
-          {isLoading && <p>Loading articles...</p>}
-          {error && <p className="error-message">{error}</p>}
+          {/* Hiển thị loading spinner khi đang tải */}
+          {isLoading && (
+            <div className="fixed inset-0 flex justify-center items-center bg-opacity-75 z-50">
+              <Spinner />
+            </div>
+          )}
+
+          {!isLoading && error && <p className="error-message">{error}</p>}
           {!isLoading && articles.length === 0 && <p>No articles found.</p>}
 
-          {articles.map((article) => (
-            <div key={article.slug} className="article-preview">
-              <div className="article-meta d-flex justify-content-between align-items-center">
-                <div className="d-flex align-items-center">
-                  <Link to={`/profile/${article.author.username}`}>
-                    <img
-                      src={article.author.image}
-                      alt={article.author.username}
-                    />
-                  </Link>
-                  <div className="info">
-                    <Link
-                      to={`/profile/${article.author.username}`}
-                      className="author"
-                    >
-                      {article.author.username}
+          {!isLoading &&
+            articles.map((article) => (
+              <div key={article.slug} className="article-preview">
+                <div className="article-meta d-flex justify-content-between align-items-center">
+                  <div className="d-flex align-items-center">
+                    <Link to={`/profile/${article.author.username}`}>
+                      <img src={article.author.image} alt={article.author.username} />
                     </Link>
-                    <span className="date">
-                      {new Date(article.createdAt).toDateString()}
-                    </span>
-                  </div>
-                  <button
-                    className={`btn btn-sm border-0 shadow-none pull-xs-right focus:ring-0 outline-none ${article.favorited ? "btn-primary" : "btn-outline-primary"
-                      }`}
-                    onClick={() => handleLike(article.slug, article.favorited)}
-                  >
-                    <i className="ion-heart"></i> {article.favoritesCount}
-                  </button>
-                </div>
-                <div></div>
-              </div>
-              <Link to={`/article/${article.slug}`} className="preview-link">
-                <h1>{article.title}</h1>
-                <p>{article.description}</p>
-                <span>Read more...</span>
-                <ul className="tag-list">
-                  {article.tagList.map((tag, index) => (
-                    <li
-                      key={index}
-                      className="tag-default tag-pill tag-outline"
+                    <div className="info">
+                      <Link to={`/profile/${article.author.username}`} className="author">
+                        {article.author.username}
+                      </Link>
+                      <span className="date">{new Date(article.createdAt).toDateString()}</span>
+                    </div>
+                    <button
+                      className={`btn btn-sm border-0 shadow-none pull-xs-right focus:ring-0 outline-none ${article.favorited ? "btn-primary" : "btn-outline-primary"}`}
+                      onClick={() => handleLike(article.slug, article.favorited)}
                     >
-                      {tag}
-                    </li>
-                  ))}
-                </ul>
-              </Link>
-            </div>
-          ))}
-          {pageCount > 1 && (
+                      <i className="ion-heart"></i> {article.favoritesCount}
+                    </button>
+                  </div>
+                </div>
+                <Link to={`/article/${article.slug}`} className="preview-link">
+                  <h1>{article.title}</h1>
+                  <p>{article.description}</p>
+                  <span>Read more...</span>
+                  <ul className="tag-list">
+                    {article.tagList.map((tag, index) => (
+                      <li key={index} className="tag-default tag-pill tag-outline">
+                        {tag}
+                      </li>
+                    ))}
+                  </ul>
+                </Link>
+              </div>
+            ))}
+        </div>
+        <div className="col-md-3 order-md-last cursor-pointer">
+          <Sidebar
+            tags={tags || []}
+            selectedTags={selectedTags}
+            setSelectedTags={(tags: string[]) => {
+              setIsLoading(true); // Hiển thị spinner ngay lập tức
+              setSelectedTags(tags);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
+      </div>
+      {pageCount > 1 && (
             <ReactPaginate
               previousLabel={"←"}
               nextLabel={"→"}
@@ -128,15 +137,6 @@ const Feed: React.FC = () => {
               disabledClassName="disabled"
             />
           )}
-        </div>
-        <div className="col-md-3 order-md-last cursor-pointer">
-          <Sidebar
-            tags={tags || []}
-            selectedTags={selectedTags}
-            setSelectedTags={setSelectedTags}
-          />
-        </div>
-      </div>
     </div>
   );
 };
