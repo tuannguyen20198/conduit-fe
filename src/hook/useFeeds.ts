@@ -79,6 +79,10 @@ const useFeeds = () => {
   };
 
   useEffect(() => {
+    setCurrentPage(1); // Reset về trang 1 khi đổi tag
+  }, [selectedTags]);
+
+  useEffect(() => {
     fetchArticles();
   }, [activeTab, selectedTags, currentPage, authToken]);
 
