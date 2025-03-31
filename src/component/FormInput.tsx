@@ -23,14 +23,16 @@ const FormInput = ({ name, placeholder, type = "text", onChange, value }: FormIn
     formState: { errors },
   } = useFormContext();
 
-  const inputValue = watch(name) ?? value; // Using watch to get the latest value
+  // Ensure inputValue is always a defined string
+  const inputValue = watch(name) ?? value ?? ''; // Default to empty string if undefined
 
   // Handle change for both input and textarea elements
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (onChange) {
       onChange(e); // Call the passed onChange handler if it exists
     }
-    setValue(name, e.target.value); // Update the form value using react-hook-form
+    const value = e.target.value?.trim() ?? ''; // Avoid undefined or null values
+    setValue(name, value); // Update the form value using react-hook-form
   };
 
   return (
@@ -40,8 +42,8 @@ const FormInput = ({ name, placeholder, type = "text", onChange, value }: FormIn
         <Suspense fallback={<p>Loading editor...</p>}>
           <div className="relative form-control p-3 min-h-[300px] bg-white rounded border border-gray-300 w-full">
             <MDXEditor
-              markdown={inputValue}
-              onChange={(val) => setValue(name, val || "")} // Sync with react-hook-form
+              markdown={inputValue || ''} // Ensure markdown is a string
+              onChange={(val) => setValue(name, val || '')} // Sync with react-hook-form
               plugins={[
                 headingsPlugin(),
                 toolbarPlugin({

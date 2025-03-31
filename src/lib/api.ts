@@ -151,3 +151,11 @@ export const unfavoriteArticle = async (slug: string) => {
   const response = await api.delete(`/articles/${slug}/favorite`);
   return response.data;
 };
+export const getMe = async () => {
+  try {
+    const { data } = await api.get("/user");
+    return data.user; // API trả về { user: { id, email, username, ... } }
+  } catch (error) {
+    throw error;
+  }
+};

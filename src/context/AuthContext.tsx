@@ -1,3 +1,4 @@
+import { getMe } from "@/lib/api";
 import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
 
 interface User {
@@ -6,6 +7,7 @@ interface User {
   username: string;
   bio: string | null;
   image: string | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
 interface AuthContextType {
@@ -32,7 +34,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(parsedUser);
     }
   }, []);
+    // Gọi API lấy user khi component mount
+    useEffect(() => {
+      const fetchUser = async () => {
+        try {
+          const userData = await getMe();
+          setUser(userData);
+        } catch (error) {
+          console.error("Failed to fetch user", error);
+          setUser(null);
+        }
+      };
   
+      fetchUser();
+    }, []);
 
   const login = (userData: { user: User }) => {
     if (!userData.user || !userData.user.token) {
