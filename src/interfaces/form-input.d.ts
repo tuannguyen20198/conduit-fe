@@ -1,6 +1,9 @@
 export interface FormInputProps {
-  name?: string;
+  name: string;
   placeholder?: string;
-  type?: "text" | "textarea" | "markdown";
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  type?: "text" | "textarea" | "markdown" | "password" | "email";
+  onChange?: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
+  value?: string;
 }

@@ -10,18 +10,12 @@ import {
   UndoRedo,
   headingsPlugin,
 } from "@mdxeditor/editor";
+import { FormInputProps } from "@/interfaces/form-input";
 
 const MDXEditor = lazy(() => import("@mdxeditor/editor").then(mod => ({ default: mod.MDXEditor })));
 
-// Define the FormInputProps interface
-interface FormInputProps {
-  name: string;
-  placeholder?: string;
-  type?: "text" | "textarea" | "markdown";
-  onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void; // Handle both input and textarea
-}
-
-const FormInput = ({ name, placeholder, type = "text", onChange }: FormInputProps) => {
+// Modify the type for `onChange` to accept both HTMLInputElement and HTMLTextAreaElement events
+const FormInput = ({ name, placeholder, type = "text", onChange, value }: FormInputProps) => {
   const {
     register,
     setValue,
@@ -29,16 +23,25 @@ const FormInput = ({ name, placeholder, type = "text", onChange }: FormInputProp
     formState: { errors },
   } = useFormContext();
 
-  const value = watch(name) ?? ""; // Default to empty string if no value is provided
+  const inputValue = watch(name) ?? value; // Using watch to get the latest value
+
+  // Handle change for both input and textarea elements
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (onChange) {
+      onChange(e); // Call the passed onChange handler if it exists
+    }
+    setValue(name, e.target.value); // Update the form value using react-hook-form
+  };
 
   return (
     <fieldset className="form-group w-full max-w-4xl mx-auto">
+      {/* Handle markdown type */}
       {type === "markdown" ? (
         <Suspense fallback={<p>Loading editor...</p>}>
           <div className="relative form-control p-3 min-h-[300px] bg-white rounded border border-gray-300 w-full">
             <MDXEditor
-              markdown={value}
-              onChange={(val) => setValue(name, val || "")}
+              markdown={inputValue}
+              onChange={(val) => setValue(name, val || "")} // Sync with react-hook-form
               plugins={[
                 headingsPlugin(),
                 toolbarPlugin({
@@ -55,8 +58,8 @@ const FormInput = ({ name, placeholder, type = "text", onChange }: FormInputProp
               ]}
               className="p-2 w-full bg-transparent outline-none relative z-20"
             />
-            {/* Display placeholder under the toolbar */}
-            {!value && (
+            {/* Placeholder for empty markdown editor */}
+            {!inputValue && (
               <div className="absolute top-20 left-10 text-gray-400 pointer-events-none z-10">
                 {placeholder}
               </div>
@@ -65,22 +68,23 @@ const FormInput = ({ name, placeholder, type = "text", onChange }: FormInputProp
         </Suspense>
       ) : type === "textarea" ? (
         <textarea
-          {...register(name, { required: `${name} is required` })}
+          {...register(name, { required: `${name} is required` })} // Register with react-hook-form
           className="form-control w-full"
           placeholder={placeholder}
-          value={value} // Allow value to be empty
-          onChange={onChange as React.ChangeEventHandler<HTMLTextAreaElement>} // Cast to correct event handler type
+          value={inputValue} // Use the value from react-hook-form
+          onChange={handleChange} // Use the custom handleChange function
         />
       ) : (
         <input
-          {...register(name, { required: `${name} is required` })}
+          {...register(name, { required: `${name} is required` })} // Register with react-hook-form
           type={type}
           className="form-control w-full"
           placeholder={placeholder}
-          value={value} // Allow value to be empty
-          onChange={onChange as React.ChangeEventHandler<HTMLInputElement>} // Cast to correct event handler type
+          value={inputValue} // Use the value from react-hook-form
+          onChange={handleChange} // Use the custom handleChange function
         />
       )}
+      {/* Display error message */}
       {errors[name] && <p className="text-danger">{String(errors[name]?.message)}</p>}
     </fieldset>
   );
