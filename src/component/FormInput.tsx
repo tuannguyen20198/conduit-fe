@@ -13,13 +13,15 @@ import {
 
 const MDXEditor = lazy(() => import("@mdxeditor/editor").then(mod => ({ default: mod.MDXEditor })));
 
+// Define the FormInputProps interface
 interface FormInputProps {
   name: string;
   placeholder?: string;
   type?: "text" | "textarea" | "markdown";
+  onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void; // Handle both input and textarea
 }
 
-const FormInput = ({ name, placeholder, type = "text" }: FormInputProps) => {
+const FormInput = ({ name, placeholder, type = "text", onChange }: FormInputProps) => {
   const {
     register,
     setValue,
@@ -27,13 +29,13 @@ const FormInput = ({ name, placeholder, type = "text" }: FormInputProps) => {
     formState: { errors },
   } = useFormContext();
 
-  const value = watch(name) ?? "";
+  const value = watch(name) ?? ""; // Default to empty string if no value is provided
 
   return (
-    <fieldset className="form-group w-full max-w-4xl mx-auto"> {/* Canh giữa và giới hạn max width */}
+    <fieldset className="form-group w-full max-w-4xl mx-auto">
       {type === "markdown" ? (
         <Suspense fallback={<p>Loading editor...</p>}>
-          <div className="relative form-control p-3 min-h-[300px] bg-white rounded border border-gray-300 w-full"> 
+          <div className="relative form-control p-3 min-h-[300px] bg-white rounded border border-gray-300 w-full">
             <MDXEditor
               markdown={value}
               onChange={(val) => setValue(name, val || "")}
@@ -53,7 +55,7 @@ const FormInput = ({ name, placeholder, type = "text" }: FormInputProps) => {
               ]}
               className="p-2 w-full bg-transparent outline-none relative z-20"
             />
-            {/* Placeholder luôn hiển thị dưới thanh toolbar */}
+            {/* Display placeholder under the toolbar */}
             {!value && (
               <div className="absolute top-20 left-10 text-gray-400 pointer-events-none z-10">
                 {placeholder}
@@ -66,6 +68,8 @@ const FormInput = ({ name, placeholder, type = "text" }: FormInputProps) => {
           {...register(name, { required: `${name} is required` })}
           className="form-control w-full"
           placeholder={placeholder}
+          value={value} // Allow value to be empty
+          onChange={onChange as React.ChangeEventHandler<HTMLTextAreaElement>} // Cast to correct event handler type
         />
       ) : (
         <input
@@ -73,6 +77,8 @@ const FormInput = ({ name, placeholder, type = "text" }: FormInputProps) => {
           type={type}
           className="form-control w-full"
           placeholder={placeholder}
+          value={value} // Allow value to be empty
+          onChange={onChange as React.ChangeEventHandler<HTMLInputElement>} // Cast to correct event handler type
         />
       )}
       {errors[name] && <p className="text-danger">{String(errors[name]?.message)}</p>}

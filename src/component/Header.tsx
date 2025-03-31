@@ -51,7 +51,7 @@ const Header = () => {
               </li>
               <li className="nav-item">
                 <Link to={`/profile/${user.username}`} className="nav-link">
-                  {/* <img src={user.image || "https://api.realworld.io/images/smiley-cyrus.jpeg"} className="user-pic" alt={user.username} /> */}
+                  <img src={user.image || "https://static.vecteezy.com/system/resources/previews/002/608/327/non_2x/mobile-application-avatar-web-button-menu-digital-silhouette-style-icon-free-vector.jpg"} className="user-pic" alt={user.username} />
                   {user.username}
                 </Link>
               </li>
