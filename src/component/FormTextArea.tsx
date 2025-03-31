@@ -13,9 +13,7 @@ const FormTextArea = ({ name, placeholder, rows }: FormInputProps) => {
     <fieldset className="form-group">
       <textarea
         {...register(name, { required: `${name} is required` })}
-        // className="form-control"
-        rows={100}
-        style={{ height: "600px !important", width: "100% !important", minHeight: "500px !important" }} 
+        className="form-control"
         placeholder={placeholder}
       />
       {errors[name] && (
