@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { Navigate } from "react-router-dom";
-import ReactPaginate from "react-paginate";
 import Spinner from "@/component/Spinner";
+import { useAuth } from "@/context/AuthContext";
 import useFeeds from "@/hook/useFeeds";
+import { useEffect } from "react";
+import ReactPaginate from "react-paginate";
+import { Link, Navigate } from "react-router-dom";
 
 const Profile = () => {
   const { user } = useAuth();
+  
   const {
     activeTab,
     setActiveTab,
@@ -15,26 +16,29 @@ const Profile = () => {
     error,
     currentPage,
     pageCount,
-    // setPageCount, // Removed as it does not exist in useFeeds
     handlePageClick,
-  } = useFeeds(); // Sử dụng hook useFeeds
+  } = useFeeds(); // Using the updated useFeeds hook
 
   const articlesPerPage = 10;
 
-  // Nếu không có user, điều hướng tới trang login
+  // If no user, redirect to login page
   if (!user) {
     return <Navigate to="/login" />;
   }
 
-  // Fetch lại bài viết khi tab thay đổi
+  // Fetch articles when tab changes
   useEffect(() => {
-    // Đảm bảo rằng khi tab thay đổi, trang được reset về 1
-    // setPageCount(1); // Removed as it does not exist in useFeeds
+    // Ensure that when the tab changes, the page is reset to 1
   }, [activeTab]);
 
   const handleTabClick = (tab: 'myArticles' | 'favoritedArticles') => {
-    setActiveTab(tab); // Thay đổi tab hiện tại
+    const mappedTab = tab === 'favoritedArticles' ? 'favorited' : tab;
+    setActiveTab(mappedTab); // Update active tab
   };
+
+  function handleLike(slug: any, favorited: any, favoritesCount: any): void {
+    throw new Error("Function not implemented.");
+  }
 
   return (
     <div className="profile-page">
@@ -56,7 +60,7 @@ const Profile = () => {
                       <i className="ion-plus-round"></i> Follow {user?.username}
                     </button>
                     <button className="btn btn-sm btn-outline-secondary action-btn">
-                      <i className="ion-gear-a"></i> Edit Profile Settings
+                      <Link to="/settings" ><i className="ion-gear-a"></i> Edit Profile Settings</Link>
                     </button>
                   </div>
                 </div>

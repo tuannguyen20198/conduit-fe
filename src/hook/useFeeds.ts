@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 
 const useFeeds = () => {
   const [activeTab, setActiveTab] = useState<
-    "your" | "global" | "tag" | "favorited" | "myArticles"
+    "your" | "global" | "tag" | "favorited" | "myArticles" | "favoritedArticles"
   >("global");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
