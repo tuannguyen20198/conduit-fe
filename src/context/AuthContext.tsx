@@ -1,23 +1,8 @@
+import { AuthContextType } from "@/interfaces/auth";
+import { User } from "@/interfaces/auth";
 import { getMe } from "@/lib/api";
 import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
-interface User {
-  email: string;
-  token: string;
-  username: string;
-  bio: string | null;
-  image: string | null;
-  setUser: React.Dispatch<React.SetStateAction<User | null>>;
-}
-
-interface AuthContextType {
-  user: User | null;
-  login: (userData: { user: User }) => void; 
-  register: (userData: { user: User }) => void;
-  setUser: React.Dispatch<React.SetStateAction<User | null>>;
-  logout: () => void;
-}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -50,13 +35,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
       fetchUser();
     }, []);
-    const navigate = useNavigate();
 
-    useEffect(() => {
-      if (user) {
-        navigate("/"); // 🔥 Redirect về trang chủ nếu đã đăng nhập
-      }
-    }, [user, navigate]);
+
 
   const login = (userData: { user: User }) => {
     if (!userData.user || !userData.user.token) {
