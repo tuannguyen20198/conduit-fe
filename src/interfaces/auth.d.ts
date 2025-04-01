@@ -1,4 +1,5 @@
 export interface User {
+  [x: string]: never[];
   email: string;
   token: string;
   username: string;

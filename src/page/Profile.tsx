@@ -1,127 +1,162 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
+import useFeeds from "@/hook/useFeeds";
+import { Navigate } from "react-router-dom";
+import ReactPaginate from "react-paginate";
+import Spinner from "@/component/Spinner";
+import {  getArticles } from "@/lib/api";
 
 const Profile = () => {
+  const { user } = useAuth();
+  const { 
+    articles, 
+    isLoading, 
+    error, 
+    handleLike, 
+    handleFollow, 
+    pageCount, 
+    handlePageClick, 
+    currentPage,
+  } = useFeeds();
+
+  // State để lưu trạng thái tab hiện tại
+  const [activeTab, setActiveTab] = useState<'myArticles' | 'favoritedArticles'>('myArticles');
+
+  // Nếu không có user, điều hướng tới trang login
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  // Fetch lại bài viết khi tab thay đổi
+  useEffect(() => {
+    if (activeTab === 'myArticles') {
+      getArticles('my');  // Lấy bài viết của người dùng
+    } else {
+      getArticles('favorited');  // Lấy bài viết đã được người dùng yêu thích
+    }
+  }, [activeTab, getArticles]);
+
+  const handleTabClick = (tab: 'myArticles' | 'favoritedArticles') => {
+    setActiveTab(tab); // Thay đổi tab hiện tại
+  };
+
   return (
     <div className="profile-page">
-      {/* User Info Section */}
       <div className="user-info">
         <div className="container">
           <div className="row">
             <div className="col-xs-12 col-md-10 offset-md-1">
-              {/* User Image */}
-              <img 
-                src="http://i.imgur.com/Qr71crq.jpg" 
-                alt="User's profile" 
-                className="user-img" 
-              />
-              <h4>Eric Simons</h4>
-              <p>
-                Cofounder @GoThinkster, lived in Aol's HQ for a few months, kinda looks like Peeta from
-                the Hunger Games
-              </p>
-              {/* Follow Button */}
-              <button className="btn btn-sm btn-outline-secondary action-btn">
-                <i className="ion-plus-round" />
-                &nbsp; Follow Eric Simons
-              </button>
-              {/* Edit Profile Settings Link */}
-              <Link to={'/settings'} className="btn btn-sm btn-outline-secondary action-btn">
-                <i className="ion-gear-a" />
-                &nbsp; Edit Profile Settings
-              </Link>
+              <div className="profile-header">
+                <img
+                  src={user?.image || "http://i.imgur.com/Qr71crq.jpg"}
+                  className="user-img"
+                  alt="User Image"
+                />
+                <div className="user-details">
+                  <h4>{user?.username}</h4>
+                  <p>{user?.bio || "This user hasn't written a bio yet."}</p>
+                  <div className="action-buttons">
+                    <button className="btn btn-sm btn-outline-primary action-btn">
+                      <i className="ion-plus-round"></i> Follow {user?.username}
+                    </button>
+                    <button className="btn btn-sm btn-outline-secondary action-btn">
+                      <i className="ion-gear-a"></i> Edit Profile Settings
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Articles Section */}
       <div className="container">
         <div className="row">
           <div className="col-xs-12 col-md-10 offset-md-1">
-            {/* Articles Toggle */}
             <div className="articles-toggle">
               <ul className="nav nav-pills outline-active">
                 <li className="nav-item">
-                  <Link to="" className="nav-link active">My Articles</Link>
+                  <a 
+                    className={`nav-link ${activeTab === 'myArticles' ? 'active' : ''}`} 
+                    onClick={() => handleTabClick('myArticles')}
+                    href="#"
+                  >
+                    My Articles
+                  </a>
                 </li>
                 <li className="nav-item">
-                  <Link to="" className="nav-link">Favorited Articles</Link>
+                  <a 
+                    className={`nav-link ${activeTab === 'favoritedArticles' ? 'active' : ''}`} 
+                    onClick={() => handleTabClick('favoritedArticles')}
+                    href="#"
+                  >
+                    Favorited Articles
+                  </a>
                 </li>
               </ul>
             </div>
 
-            {/* Article Previews */}
-            <div className="article-preview">
-              {/* Article 1 */}
-              <div className="article-meta">
-                <Link to="/profile/eric-simons">
-                  <img 
-                    src="http://i.imgur.com/Qr71crq.jpg" 
-                    alt="Eric Simons" 
-                  />
-                </Link>
-                <div className="info">
-                  <Link to="/profile/eric-simons" className="author">Eric Simons</Link>
-                  <span className="date">January 20th</span>
-                </div>
-                <button className="btn btn-outline-primary btn-sm pull-xs-right">
-                  <i className="ion-heart" /> 29
-                </button>
-              </div>
-              <Link to="/article/how-to-buil-webapps-that-scale" className="preview-link">
-                <h1>How to build webapps that scale</h1>
-                <p>This is the description for the post.</p>
-                <span>Read more...</span>
-                <ul className="tag-list">
-                  <li className="tag-default tag-pill tag-outline">realworld</li>
-                  <li className="tag-default tag-pill tag-outline">implementations</li>
-                </ul>
-              </Link>
-            </div>
+            {isLoading && <Spinner />}
+            {error && <div>{error}</div>}
 
-            {/* Article 2 */}
-            <div className="article-preview">
-              <div className="article-meta">
-                <Link to="/profile/albert-pai">
-                  <img 
-                    src="http://i.imgur.com/N4VcUeJ.jpg" 
-                    alt="Albert Pai" 
-                  />
-                </Link>
-                <div className="info">
-                  <Link to="/profile/albert-pai" className="author">Albert Pai</Link>
-                  <span className="date">January 20th</span>
+            {articles.map((article: any) => (
+              <div className="article-preview" key={article.slug}>
+                <div className="article-meta">
+                  <a href={`/profile/${article.author.username}`}>
+                    <img src={article.author.image || "http://i.imgur.com/Qr71crq.jpg"} alt={article.author.username} />
+                  </a>
+                  <div className="info">
+                    <a href={`/profile/${article.author.username}`} className="author">
+                      {article.author.username}
+                    </a>
+                    <span className="date">{article.createdAt}</span>
+                  </div>
+                  <button 
+                    className="btn btn-outline-primary btn-sm pull-xs-right" 
+                    onClick={() => handleLike(article.slug, article.favorited, article.favoritesCount)}
+                  >
+                    <i className="ion-heart"></i> {article.favoritesCount}
+                  </button>
                 </div>
-                <button className="btn btn-outline-primary btn-sm pull-xs-right">
-                  <i className="ion-heart" /> 32
-                </button>
+                <a href={`/article/${article.slug}`} className="preview-link">
+                  <h1>{article.title}</h1>
+                  <p>{article.description}</p>
+                  <span>Read more...</span>
+                  <ul className="tag-list">
+                    {article.tagList.map((tag: string) => (
+                      <li className="tag-default tag-pill tag-outline" key={tag}>{tag}</li>
+                    ))}
+                  </ul>
+                </a>
               </div>
-              <Link to="/article/the-song-you" className="preview-link">
-                <h1>The song you won't ever stop singing. No matter how hard you try.</h1>
-                <p>This is the description for the post.</p>
-                <span>Read more...</span>
-                <ul className="tag-list">
-                  <li className="tag-default tag-pill tag-outline">Music</li>
-                  <li className="tag-default tag-pill tag-outline">Song</li>
-                </ul>
-              </Link>
-            </div>
+            ))}
 
-            {/* Pagination */}
-            <ul className="pagination">
-              <li className="page-item active">
-                <Link className="page-link" to="">1</Link>
-              </li>
-              <li className="page-item">
-                <Link className="page-link" to="">2</Link>
-              </li>
-            </ul>
+            {!isLoading && (
+              <ReactPaginate
+                previousLabel={"←"}
+                nextLabel={"→"}
+                breakLabel={"..."}
+                pageCount={pageCount}
+                marginPagesDisplayed={1}
+                pageRangeDisplayed={2}
+                onPageChange={handlePageClick}
+                forcePage={currentPage - 1} // Giúp ReactPaginate cập nhật ngay lập tức
+                containerClassName="pagination"
+                pageClassName="page-item"
+                pageLinkClassName="page-link"
+                previousClassName="page-item"
+                nextClassName="page-item"
+                previousLinkClassName="hidden"
+                nextLinkClassName="hidden"
+                activeClassName="active"
+                disabledClassName="disabled"
+              />
+            )}
           </div>
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default Profile;
