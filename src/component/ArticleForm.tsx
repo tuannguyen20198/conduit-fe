@@ -2,14 +2,10 @@ import { FormProvider, useForm } from "react-hook-form";
 import FormInput from "./FormInput";
 import FormTags from "./FormTags";
 import SubmitButton from "./SubmitButton";
+import useArticles from "@/hook/useArticles";
 
 const ArticleForm = ({ onSubmit, apiErrors }: any) => {
-  const methods = useForm({ mode: "onChange" }); // Cập nhật mode để `isValid` hoạt động đúng
-  const { handleSubmit, setValue, formState: { errors } } = methods;
-
-  const handleTagsChange = (tags: string[]) => {
-    setValue("tags", tags);
-  };
+  const {methods, handleSubmit, handleTagsChange, errors} = useArticles();
 
   return (
     <FormProvider {...methods}>

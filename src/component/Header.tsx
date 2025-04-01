@@ -4,13 +4,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 
 const Header = () => {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (user) {
-      navigate("/"); // 🔥 Redirect về trang chủ nếu đã đăng nhập
-    }
-  }, [user, navigate]);
   return (
     <nav className="navbar navbar-light">
       <div className="container">

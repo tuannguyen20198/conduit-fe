@@ -23,6 +23,7 @@ const useArticles = (refreshArticles?: () => void) => {
   const { user } = useAuth();
   const methods = useForm();
   const [submittedContent, setSubmittedContent] = useState("");
+
   const handleTagsChange = (tags: string[]) => {
     setValue("tags", tags); // ✅ Cập nhật `tags` vào form
     if (tags.length > 0) clearErrors("tags"); // ✅ Xóa lỗi nếu có
@@ -78,6 +79,7 @@ const useArticles = (refreshArticles?: () => void) => {
     tags,
     setTags,
     handleTagsChange,
+    methods,
   };
 };
 

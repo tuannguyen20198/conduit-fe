@@ -1,5 +1,6 @@
 import { getMe } from "@/lib/api";
 import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface User {
   email: string;
@@ -22,6 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -48,6 +50,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
       fetchUser();
     }, []);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+      if (user) {
+        navigate("/"); // 🔥 Redirect về trang chủ nếu đã đăng nhập
+      }
+    }, [user, navigate]);
 
   const login = (userData: { user: User }) => {
     if (!userData.user || !userData.user.token) {
