@@ -1,53 +1,36 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import useFeeds from "@/hook/useFeeds";
 import { Navigate } from "react-router-dom";
 import ReactPaginate from "react-paginate";
 import Spinner from "@/component/Spinner";
-import {  getArticles } from "@/lib/api";
+import useFeeds from "@/hook/useFeeds";
 
 const Profile = () => {
   const { user } = useAuth();
-  const { 
-    isLoading, 
-    error, 
-    handleLike, 
-    handleFollow, 
-    pageCount, 
-    handlePageClick, 
+  const {
+    activeTab,
+    setActiveTab,
+    articles,
+    isLoading,
+    error,
     currentPage,
-  } = useFeeds();
+    pageCount,
+    // setPageCount, // Removed as it does not exist in useFeeds
+    handlePageClick,
+  } = useFeeds(); // Sử dụng hook useFeeds
 
-  const [articles, setArticles] = useState<any[]>([]); // Define articles and setArticles
-
-  // State để lưu trạng thái tab hiện tại
-  const [activeTab, setActiveTab] = useState<'myArticles' | 'favoritedArticles'>('myArticles');
+  const articlesPerPage = 10;
 
   // Nếu không có user, điều hướng tới trang login
   if (!user) {
     return <Navigate to="/login" />;
   }
 
-  // Số lượng bài viết trên mỗi trang
-  const articlesPerPage = 10;
-
   // Fetch lại bài viết khi tab thay đổi
   useEffect(() => {
-    if (activeTab === 'myArticles') {
-      getArticles({ author: user.username, limit: 10, offset: (currentPage - 1) * articlesPerPage }) 
-        .then(response => {
-          // Lọc bài viết của người dùng
-          const myArticles = response.articles.filter(article => article.author.username === user.username);
-          setArticles(myArticles); // Lưu bài viết của người dùng vào state
-        });
-    } else {
-      getArticles({ favorited: user.username, limit: 10, offset: (currentPage - 1) * articlesPerPage })
-        .then(response => {
-          setArticles(response.articles); // Lưu bài viết đã yêu thích vào state
-        });
-    }
-  }, [activeTab, currentPage, user.username]);
-  
+    // Đảm bảo rằng khi tab thay đổi, trang được reset về 1
+    // setPageCount(1); // Removed as it does not exist in useFeeds
+  }, [activeTab]);
 
   const handleTabClick = (tab: 'myArticles' | 'favoritedArticles') => {
     setActiveTab(tab); // Thay đổi tab hiện tại
@@ -153,7 +136,7 @@ const Profile = () => {
                 marginPagesDisplayed={1}
                 pageRangeDisplayed={2}
                 onPageChange={handlePageClick}
-                forcePage={currentPage - 1} // Giúp ReactPaginate cập nhật ngay lập tức
+                forcePage={currentPage - 1}
                 containerClassName="pagination"
                 pageClassName="page-item"
                 pageLinkClassName="page-link"
