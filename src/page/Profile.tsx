@@ -9,7 +9,6 @@ import {  getArticles } from "@/lib/api";
 const Profile = () => {
   const { user } = useAuth();
   const { 
-    articles, 
     isLoading, 
     error, 
     handleLike, 
@@ -19,6 +18,8 @@ const Profile = () => {
     currentPage,
   } = useFeeds();
 
+  const [articles, setArticles] = useState<any[]>([]); // Define articles and setArticles
+
   // State để lưu trạng thái tab hiện tại
   const [activeTab, setActiveTab] = useState<'myArticles' | 'favoritedArticles'>('myArticles');
 
@@ -27,14 +28,26 @@ const Profile = () => {
     return <Navigate to="/login" />;
   }
 
+  // Số lượng bài viết trên mỗi trang
+  const articlesPerPage = 10;
+
   // Fetch lại bài viết khi tab thay đổi
   useEffect(() => {
     if (activeTab === 'myArticles') {
-      getArticles('my');  // Lấy bài viết của người dùng
+      getArticles({ author: user.username, limit: 10, offset: (currentPage - 1) * articlesPerPage }) 
+        .then(response => {
+          // Lọc bài viết của người dùng
+          const myArticles = response.articles.filter(article => article.author.username === user.username);
+          setArticles(myArticles); // Lưu bài viết của người dùng vào state
+        });
     } else {
-      getArticles('favorited');  // Lấy bài viết đã được người dùng yêu thích
+      getArticles({ favorited: user.username, limit: 10, offset: (currentPage - 1) * articlesPerPage })
+        .then(response => {
+          setArticles(response.articles); // Lưu bài viết đã yêu thích vào state
+        });
     }
-  }, [activeTab, getArticles]);
+  }, [activeTab, currentPage, user.username]);
+  
 
   const handleTabClick = (tab: 'myArticles' | 'favoritedArticles') => {
     setActiveTab(tab); // Thay đổi tab hiện tại

@@ -38,6 +38,73 @@ const useFeeds = () => {
   }, [selectedTags]);
 
   // Lấy các bài viết theo feed, tag, v.v...
+  // const fetchArticles = async () => {
+  //   setIsLoading(true);
+  //   const startTime = Date.now(); // Bắt đầu tính thời gian
+  //   try {
+  //     let author = undefined;
+  //     let favorites = undefined;
+
+  //     // Nếu đang ở tab 'your' (bài viết của những người đã follow)
+  //     if (activeTab === "your" && user) {
+  //       // Lấy danh sách người dùng đã follow
+  //       const followingUsers = user.following || [];
+  //       if (followingUsers.length > 0) {
+  //         // Lấy bài viết của những người đã follow
+  //         author = followingUsers.join(",");
+  //       } else {
+  //         setArticles([]); // Nếu chưa follow ai thì không có bài viết
+  //         setTotalArticles(0);
+  //         return;
+  //       }
+  //     }
+
+  //     // Nếu đang ở tab 'favorited' (bài viết đã yêu thích)
+  //     if (activeTab === "favorited" && user) {
+  //       const likedArticles = JSON.parse(
+  //         localStorage.getItem("likedArticles") || "{}"
+  //       );
+  //       // Lấy danh sách các bài viết mà người dùng đã yêu thích
+  //       favorites = Object.keys(likedArticles).join(",");
+  //     }
+
+  //     // Nếu đang ở tab 'myArticles' (bài viết của chính bạn)
+  //     if (activeTab === "myArticles" && user) {
+  //       author = user.username; // Lấy bài viết của chính người dùng
+  //     }
+
+  //     const response = await getArticles({
+  //       author, // Lấy bài viết của người đã follow (tab "your") hoặc bài viết của chính người dùng (tab "myArticles")
+  //       tag: selectedTags.length ? selectedTags.join(",") : undefined,
+  //       offset: (currentPage - 1) * articlesPerPage,
+  //       limit: articlesPerPage,
+  //       favorites, // Lấy bài viết yêu thích (chỉ ở tab "favorited")
+  //     });
+
+  //     const storedLikes = JSON.parse(
+  //       localStorage.getItem("likedArticles") || "{}"
+  //     );
+
+  //     setArticles(
+  //       response.articles.map(
+  //         (article: { slug: string | number; favorited: any }) => ({
+  //           ...article,
+  //           favorited: storedLikes[article.slug] ?? article.favorited,
+  //         })
+  //       )
+  //     );
+  //     setTotalArticles(response.articlesCount); // Cập nhật đúng tổng số bài viết
+  //   } catch (err) {
+  //     setError("Failed to load articles");
+  //   } finally {
+  //     const elapsedTime = Date.now() - startTime;
+  //     const minLoadingTime = 500; // Thời gian tối thiểu để spinner hiển thị
+  //     setTimeout(
+  //       () => setIsLoading(false),
+  //       Math.max(0, minLoadingTime - elapsedTime)
+  //     );
+  //   }
+  // };
   const fetchArticles = async () => {
     setIsLoading(true);
     const startTime = Date.now(); // Bắt đầu tính thời gian
@@ -45,9 +112,14 @@ const useFeeds = () => {
       let author = undefined;
       let favorites = undefined;
 
+      // Log các tham số trước khi gọi API để kiểm tra
+      console.log("activeTab:", activeTab);
+      console.log("user:", user);
+      console.log("selectedTags:", selectedTags);
+      console.log("currentPage:", currentPage);
+
       // Nếu đang ở tab 'your' (bài viết của những người đã follow)
       if (activeTab === "your" && user) {
-        // Lấy danh sách người dùng đã follow
         const followingUsers = user.following || [];
         if (followingUsers.length > 0) {
           // Lấy bài viết của những người đã follow
@@ -64,7 +136,6 @@ const useFeeds = () => {
         const likedArticles = JSON.parse(
           localStorage.getItem("likedArticles") || "{}"
         );
-        // Lấy danh sách các bài viết mà người dùng đã yêu thích
         favorites = Object.keys(likedArticles).join(",");
       }
 
@@ -73,6 +144,9 @@ const useFeeds = () => {
         author = user.username; // Lấy bài viết của chính người dùng
       }
 
+      console.log("author:", author); // Log giá trị của author
+
+      // Gọi API với tham số đã được xác định
       const response = await getArticles({
         author, // Lấy bài viết của người đã follow (tab "your") hoặc bài viết của chính người dùng (tab "myArticles")
         tag: selectedTags.length ? selectedTags.join(",") : undefined,
