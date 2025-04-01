@@ -21,7 +21,15 @@ const Feed: React.FC = () => {
     handlePageClick,
     handleLike,
     tags,
-    currentPage } = useFeeds();
+    currentPage,
+  } = useFeeds();
+
+  useEffect(() => {
+    // Khi selectedTags thay đổi, chuyển tab sang "tag"
+    if (selectedTags.length > 0) {
+      setActiveTab("tag");
+    }
+  }, [selectedTags]); // Chạy mỗi khi selectedTags thay đổi
 
   return (
     <div className="container page">
@@ -32,11 +40,10 @@ const Feed: React.FC = () => {
               {authToken && (
                 <li className="nav-item">
                   <button
-                    className={`nav-link ${activeTab === "your" ? "active" : ""
-                      }`}
+                    className={`nav-link ${activeTab === "your" ? "active" : ""}`}
                     onClick={() => {
                       setActiveTab("your");
-                      setSelectedTags([]);
+                      setSelectedTags([]);  // Reset selected tags when switching to 'Your Feed'
                       setCurrentPage(1);
                     }}
                   >
@@ -46,17 +53,31 @@ const Feed: React.FC = () => {
               )}
               <li className="nav-item">
                 <button
-                  className={`nav-link ${activeTab === "global" ? "active" : ""
-                    }`}
+                  className={`nav-link ${activeTab === "global" ? "active" : ""}`}
                   onClick={() => {
                     setActiveTab("global");
-                    setSelectedTags([]);
+                    setSelectedTags([]);  // Reset selected tags when switching to 'Global Feed'
                     setCurrentPage(1);
                   }}
                 >
                   Global Feed
                 </button>
               </li>
+
+              {/* Hiển thị tab cho tag đã chọn */}
+              {selectedTags.length > 0 && (
+                <li className="nav-item">
+                  <button
+                    className={`nav-link ${activeTab === "tag" ? "active" : ""}`}
+                    onClick={() => {
+                      setActiveTab("tag");
+                      setCurrentPage(1);
+                    }}
+                  >
+                    #{selectedTags[0]} {/* Hiển thị tên tag đã chọn */}
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -85,7 +106,9 @@ const Feed: React.FC = () => {
                       <span className="date">{new Date(article.createdAt).toDateString()}</span>
                     </div>
                     <button
-                      className={`btn btn-sm border-0 shadow-none pull-xs-right focus:ring-0 outline-none ${article.favorited ? "btn-primary" : "btn-outline-primary"}`}
+                      className={`btn btn-sm border-0 shadow-none pull-xs-right focus:ring-0 outline-none ${
+                        article.favorited ? "btn-primary" : "btn-outline-primary"
+                      }`}
                       onClick={() => handleLike(article.slug, article.favorited, article.favoritesCount)}
                     >
                       <i className="ion-heart"></i> {article.favoritesCount}
@@ -105,7 +128,6 @@ const Feed: React.FC = () => {
                   </ul>
                 </Link>
               </div>
-
             ))}
         </div>
         <div className="col-md-3 order-md-last cursor-pointer">
@@ -113,14 +135,15 @@ const Feed: React.FC = () => {
             tags={tags || []}
             selectedTags={selectedTags}
             setSelectedTags={(tags: string[]) => {
-              setIsLoading(true); // Hiển thị spinner ngay lập tức
-              setSelectedTags(tags);
-              setCurrentPage(1);
+              setIsLoading(true);  // Hiển thị spinner ngay lập tức
+              setSelectedTags(tags); // Khi chọn tag, cập nhật selectedTags
+              setCurrentPage(1);  // Reset lại trang
             }}
           />
         </div>
       </div>
-      {!isLoading &&
+
+      {!isLoading && (
         <ReactPaginate
           previousLabel={"←"}
           nextLabel={"→"}
@@ -140,8 +163,7 @@ const Feed: React.FC = () => {
           activeClassName="active"
           disabledClassName="disabled"
         />
-      }
-
+      )}
     </div>
   );
 };

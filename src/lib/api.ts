@@ -159,3 +159,12 @@ export const getMe = async () => {
     throw error;
   }
 };
+
+export const getProfile = async (username: string) => {
+  try {
+    const { data } = await api.get(`/profiles/${username}`); // API trả về { profile: { id, email, username, ... } }
+    return data.profile;
+  } catch (error) {
+    throw error;
+  }
+};

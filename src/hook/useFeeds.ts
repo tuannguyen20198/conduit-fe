@@ -12,7 +12,9 @@ import {
 import { useNavigate } from "react-router-dom";
 
 const useFeeds = () => {
-  const [activeTab, setActiveTab] = useState<"your" | "global">("global");
+  const [activeTab, setActiveTab] = useState<"your" | "global" | "tag">(
+    "global"
+  );
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [articles, setArticles] = useState<ArticleFormData[]>([]);
@@ -25,42 +27,22 @@ const useFeeds = () => {
   const { data: tags } = useTags();
   const pageCount = Math.max(1, Math.ceil(totalArticles / articlesPerPage));
   const navigate = useNavigate();
+
+  // Chạy khi hash trong URL thay đổi
   useEffect(() => {
-    if (!user) return; // Nếu user không tồn tại, không thực hiện gì
-
-    // Lấy danh sách người dùng đã like từ localStorage
-    const storedLikes = JSON.parse(
-      localStorage.getItem("likedArticles") || "{}"
-    );
-
-    setArticles((prevArticles) =>
-      prevArticles.map((article) => ({
-        ...article,
-        // Cập nhật lại trạng thái "favorited" và "favoritesCount"
-        favorited:
-          storedLikes[article.slug]?.includes(user.username) ||
-          article.favorited,
-        // Đảm bảo favoritesCount luôn là số hợp lệ, tránh NaN
-        favoritesCount:
-          storedLikes[article.slug]?.length || article.favoritesCount || 0,
-        // Lưu lại danh sách người đã like (likedBy)
-        likedBy: storedLikes[article.slug] || article.likedBy || [],
-      }))
-    );
-  }, [user]); // Chạy lại mỗi khi user thay đổi
-
-  const fetchArticles = async () => {
-    if (activeTab === "your" && !authToken) {
-      setArticles([]);
-      setTotalArticles(0);
-      return;
+    const hash = window.location.hash.replace("#", "");
+    if (hash && !selectedTags.includes(hash)) {
+      setSelectedTags([hash]); // Chọn tag khi có hash
+      setActiveTab("tag"); // Chuyển sang tab tag
     }
+  }, [selectedTags]);
 
+  // Lấy các bài viết theo feed, tag, v.v...
+  const fetchArticles = async () => {
     setIsLoading(true);
     const startTime = Date.now(); // Bắt đầu tính thời gian
     try {
       const response = await getArticles({
-        feed: activeTab === "your" ? true : undefined,
         tag: selectedTags.length ? selectedTags.join(",") : undefined,
         offset: (currentPage - 1) * articlesPerPage,
         limit: articlesPerPage,
@@ -69,16 +51,9 @@ const useFeeds = () => {
       const storedLikes = JSON.parse(
         localStorage.getItem("likedArticles") || "{}"
       );
-      const filteredArticles =
-        activeTab === "your"
-          ? response.articles.filter(
-              (article: { author: { following: any } }) =>
-                article.author.following
-            )
-          : response.articles;
 
       setArticles(
-        filteredArticles.map(
+        response.articles.map(
           (article: { slug: string | number; favorited: any }) => ({
             ...article,
             favorited: storedLikes[article.slug] ?? article.favorited,
@@ -98,13 +73,10 @@ const useFeeds = () => {
     }
   };
 
-  useEffect(() => {
-    setCurrentPage(1); // Reset về trang 1 khi đổi tag
-  }, [selectedTags]);
-
+  // Chạy khi các giá trị thay đổi (tab, tags, page)
   useEffect(() => {
     fetchArticles();
-  }, [activeTab, selectedTags, currentPage, authToken]);
+  }, [selectedTags, currentPage, activeTab]);
 
   const handlePageClick = ({ selected }: { selected: number }) => {
     setCurrentPage(selected + 1);
@@ -122,32 +94,25 @@ const useFeeds = () => {
       return;
     }
 
-    // Đảm bảo favoritesCount là số hợp lệ, nếu không thì gán là 0
     const validFavoritesCount = isNaN(favoritesCount) ? 0 : favoritesCount;
-
     const storedLikes = JSON.parse(
       localStorage.getItem("likedArticles") || "{}"
     );
     const currentLikes = storedLikes[slug] || [];
 
-    // Kiểm tra nếu người dùng đã like rồi thì không thay đổi gì
-    const updatedFavorited = !currentLikes.includes(user.username); // Nếu user chưa like, thì like, ngược lại thì unlike
+    const updatedFavorited = !currentLikes.includes(user.username);
 
-    // Tính toán lại số lượng like
     const updatedFavoritesCount = updatedFavorited
       ? validFavoritesCount + 1
       : Math.max(validFavoritesCount - 1, 0);
 
-    // Thêm hoặc xóa người dùng khỏi danh sách likedBy
     const updatedLikedBy = updatedFavorited
       ? [...currentLikes, user.username]
       : currentLikes.filter((username: string) => username !== user.username);
 
-    // Cập nhật lại localStorage
     storedLikes[slug] = updatedLikedBy;
     localStorage.setItem("likedArticles", JSON.stringify(storedLikes));
 
-    // Cập nhật lại UI với trạng thái mới
     setArticles((prev) =>
       prev.map((article) =>
         article.slug === slug
@@ -162,22 +127,19 @@ const useFeeds = () => {
     );
 
     try {
-      // Gửi yêu cầu đến API để cập nhật trạng thái thích/unlike
       if (updatedFavorited) {
-        await favoriteArticle(slug); // Thực hiện hành động "like"
+        await favoriteArticle(slug);
       } else {
-        await unfavoriteArticle(slug); // Thực hiện hành động "unlike"
+        await unfavoriteArticle(slug);
       }
     } catch (err) {
       console.error("Lỗi khi cập nhật trạng thái yêu thích:", err);
-
-      // Nếu có lỗi, quay lại trạng thái ban đầu
       setArticles((prev) =>
         prev.map((article) =>
           article.slug === slug
             ? {
                 ...article,
-                favorited: favorited, // Quay lại trạng thái ban đầu
+                favorited: favorited,
                 favoritesCount: favorited
                   ? validFavoritesCount + 1
                   : Math.max(validFavoritesCount - 1, 0),
@@ -207,6 +169,13 @@ const useFeeds = () => {
       console.error("Error updating follow status", err);
     }
   };
+
+  const handleTagClick = (tag: string) => {
+    setSelectedTags([tag]);
+    setActiveTab("tag"); // Chuyển sang tab tag
+    window.location.hash = tag; // Cập nhật URL hash
+  };
+
   return {
     activeTab,
     authToken,
@@ -228,6 +197,7 @@ const useFeeds = () => {
     handlePageClick,
     handleLike,
     handleFollow,
+    handleTagClick,
   };
 };
 
