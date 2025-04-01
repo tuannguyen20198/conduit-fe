@@ -19,12 +19,9 @@ const useLogin = () => {
     },
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Submitting form data:", formData);
     mutate(formData);
   };
   const handleSubmit = (e: React.FormEvent) => {
@@ -35,7 +32,11 @@ const useLogin = () => {
     setFormData({ email: "", password: "" });
     navigate("/register");
   };
-
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
   useEffect(() => {
     if (user) {
       navigate("/"); // Chuyển hướng về trang chủ nếu đã đăng nhập
@@ -49,7 +50,6 @@ const useLogin = () => {
     handleLogin,
     methods,
     isPending,
-    onSubmit,
     error,
     user,
   };

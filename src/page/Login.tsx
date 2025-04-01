@@ -9,39 +9,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const navigate = useNavigate();
-  const { login } = useAuth();
-  const [formData, setFormData] = useState({ email: "", password: "" });
-  const { user } = useAuth();
-  const methods = useForm();
-
-  const { mutate, isPending, error } = useMutation({
-    mutationFn: loginUser,
-    onSuccess: (user) => {
-      login(user);
-      navigate("/", { replace: true });
-    },
-    onError: (err) => {
-      console.error("Error during login:", err);
-    }
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Submitting form data:", formData);
-    mutate(formData);
-  };
-
-  useEffect(() => {
-    if (user) {
-      navigate("/"); // Redirect if already logged in
-    }
-  }, [user, navigate]);
-
+  const {error, methods, handleLogin, handleChange,formData,isPending} = useLogin();
   return (
     <div className="auth-page">
       <div className="container page">
