@@ -56,7 +56,7 @@ const Profile = () => {
                   <h4>{user?.username}</h4>
                   <p>{user?.bio || "This user hasn't written a bio yet."}</p>
                   <div className="action-buttons">
-                    <button className="btn btn-sm btn-outline-primary action-btn">
+                    <button className="btn btn-sm hover:btn-outline-primary hover:text-white action-btn">
                       <i className="ion-plus-round"></i> Follow {user?.username}
                     </button>
                     <button className="btn btn-sm btn-outline-secondary action-btn">
