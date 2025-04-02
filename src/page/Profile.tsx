@@ -17,6 +17,7 @@ const Profile = () => {
     currentPage,
     pageCount,
     handlePageClick,
+    handleLike,
   } = useFeeds(); // Using the updated useFeeds hook
 
   const articlesPerPage = 10;
@@ -36,9 +37,7 @@ const Profile = () => {
     setActiveTab(mappedTab); // Update active tab
   };
 
-  function handleLike(slug: any, favorited: any, favoritesCount: any): void {
-    throw new Error("Function not implemented.");
-  }
+
 
   return (
     <div className="profile-page">

@@ -45,7 +45,7 @@ const FormInput = ({ name, placeholder, type = "text", onChange, value }: FormIn
             <MDXEditor
               markdown={inputValue || ''} // Đảm bảo markdown là chuỗi
               onChange={(val) => setValue(name, val || '')} // Đồng bộ hóa với react-hook-form
-              plugins={[
+              plugins={[ 
                 headingsPlugin(),
                 toolbarPlugin({
                   toolbarContents: () => (
@@ -77,10 +77,16 @@ const FormInput = ({ name, placeholder, type = "text", onChange, value }: FormIn
           value={inputValue} // Lấy giá trị từ react-hook-form
           onChange={handleChange} // Gọi handleChange khi thay đổi
         />
-      ) : type === "text" ? (
+      ) : type === "text" || type === "email" || type === "password" ? (
         <input
-          {...register(name, { required: `${name} is required` })} // Đăng ký với react-hook-form
-          type={type}
+          {...register(name, { 
+            required: `${name} is required`, 
+            pattern: type === "email" ? {
+              value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
+              message: "Invalid email address"
+            } : undefined, // Email validation regex
+          })} // Đăng ký với react-hook-form
+          type={type} // Set type to text, email, or password
           className="form-control w-full"
           placeholder={placeholder}
           value={inputValue} // Lấy giá trị từ react-hook-form
