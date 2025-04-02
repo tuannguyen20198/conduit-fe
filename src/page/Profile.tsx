@@ -3,7 +3,7 @@ import { useAuth } from "@/context/AuthContext";
 import useFeeds from "@/hook/useFeeds";
 import { useEffect } from "react";
 import ReactPaginate from "react-paginate";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -20,6 +20,8 @@ const Profile = () => {
     handleLike,
   } = useFeeds(); // Using the updated useFeeds hook
 
+  const { username } = useParams(); // Get the username from the URL
+
   const articlesPerPage = 10;
 
   // If no user, redirect to login page
@@ -27,17 +29,37 @@ const Profile = () => {
     return <Navigate to="/login" />;
   }
 
-  // Fetch articles when tab changes
+  // Set default tab to "myArticles" when the component loads for the first time
   useEffect(() => {
-    // Ensure that when the tab changes, the page is reset to 1
-  }, [activeTab]);
+    if (!activeTab) {
+      setActiveTab('myArticles'); // Set "myArticles" as the default active tab
+    }
+  }, [activeTab, setActiveTab]);
 
+  // Ensure active tab is "myArticles" when visiting a specific user's profile
+  useEffect(() => {
+    if (username) {
+      setActiveTab('myArticles'); // Set "myArticles" as the active tab when visiting any user's profile page
+    }
+  }, [username, setActiveTab]);
+
+  // Handle tab click and change active tab
   const handleTabClick = (tab: 'myArticles' | 'favoritedArticles') => {
-    const mappedTab = tab === 'favoritedArticles' ? 'favorited' : tab;
-    setActiveTab(mappedTab); // Update active tab
+    setActiveTab(tab); // Update active tab
   };
 
+  // Handle click on username
+  const handleUsernameClick = () => {
+    setActiveTab('myArticles'); // Ensure "My Articles" is selected when the username is clicked
+  };
 
+  // Filter articles by favorites count
+  const filteredArticles = articles.filter((article: any) => {
+    if (activeTab === 'favoritedArticles') {
+      return article.favoritesCount >= 1; // Only show articles with at least 1 like
+    }
+    return true; // For 'myArticles', show all
+  });
 
   return (
     <div className="profile-page">
@@ -52,7 +74,9 @@ const Profile = () => {
                   alt="User Image"
                 />
                 <div className="user-details">
-                  <h4>{user?.username}</h4>
+                  <h4 onClick={handleUsernameClick} style={{ cursor: "pointer" }}>
+                    {user?.username}
+                  </h4>
                   <p>{user?.bio || "This user hasn't written a bio yet."}</p>
                   <div className="action-buttons">
                     <button className="btn btn-sm hover:btn-outline-primary hover:text-white action-btn">
@@ -98,37 +122,44 @@ const Profile = () => {
             {isLoading && <Spinner />}
             {error && <div>{error}</div>}
 
-            {articles.map((article: any) => (
-              <div className="article-preview" key={article.slug}>
-                <div className="article-meta">
-                  <a href={`/profile/${article.author.username}`}>
-                    <img src={article.author.image || "http://i.imgur.com/Qr71crq.jpg"} alt={article.author.username} />
-                  </a>
-                  <div className="info">
-                    <a href={`/profile/${article.author.username}`} className="author">
-                      {article.author.username}
-                    </a>
-                    <span className="date">{article.createdAt}</span>
-                  </div>
-                  <button 
-                    className="btn btn-outline-primary btn-sm pull-xs-right" 
-                    onClick={() => handleLike(article.slug, article.favorited, article.favoritesCount)}
-                  >
-                    <i className="ion-heart"></i> {article.favoritesCount}
-                  </button>
-                </div>
-                <a href={`/article/${article.slug}`} className="preview-link">
-                  <h1>{article.title}</h1>
-                  <p>{article.description}</p>
-                  <span>Read more...</span>
-                  <ul className="tag-list">
-                    {article.tagList.map((tag: string) => (
-                      <li className="tag-default tag-pill tag-outline" key={tag}>{tag}</li>
-                    ))}
-                  </ul>
-                </a>
+            {/* If there are no articles */}
+            {filteredArticles.length === 0 ? (
+              <div className="no-articles">
+                <h4>No articles to display.</h4>
               </div>
-            ))}
+            ) : (
+              filteredArticles.map((article: any) => (
+                <div className="article-preview" key={article.slug}>
+                  <div className="article-meta">
+                    <a href={`/profile/${article.author.username}`}>
+                      <img src={article.author.image || "http://i.imgur.com/Qr71crq.jpg"} alt={article.author.username} />
+                    </a>
+                    <div className="info">
+                      <a href={`/profile/${article.author.username}`} className="author">
+                        {article.author.username}
+                      </a>
+                      <span className="date">{article.createdAt}</span>
+                    </div>
+                    <button 
+                      className="btn btn-outline-primary btn-sm pull-xs-right" 
+                      onClick={() => handleLike(article.slug, article.favorited, article.favoritesCount)}
+                    >
+                      <i className="ion-heart"></i> {article.favoritesCount}
+                    </button>
+                  </div>
+                  <a href={`/article/${article.slug}`} className="preview-link">
+                    <h1>{article.title}</h1>
+                    <p>{article.description}</p>
+                    <span>Read more...</span>
+                    <ul className="tag-list">
+                      {article.tagList.map((tag: string) => (
+                        <li className="tag-default tag-pill tag-outline" key={tag}>{tag}</li>
+                      ))}
+                    </ul>
+                  </a>
+                </div>
+              ))
+            )}
 
             {!isLoading && (
               <ReactPaginate
