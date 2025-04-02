@@ -17,7 +17,6 @@ const Profile = () => {
     currentPage,
     pageCount,
     handlePageClick,
-    handleLike,
   } = useFeeds(); // Using the updated useFeeds hook
 
   const { username } = useParams(); // Get the username from the URL
@@ -48,12 +47,7 @@ const Profile = () => {
     setActiveTab(tab); // Update active tab
   };
 
-  // Handle click on username
-  const handleUsernameClick = () => {
-    setActiveTab('myArticles'); // Ensure "My Articles" is selected when the username is clicked
-  };
-
-  // Filter articles by favorites count
+  // Filter articles by favorites count (only for 'favoritedArticles')
   const filteredArticles = articles.filter((article: any) => {
     if (activeTab === 'favoritedArticles') {
       return article.favoritesCount >= 1; // Only show articles with at least 1 like
@@ -74,9 +68,7 @@ const Profile = () => {
                   alt="User Image"
                 />
                 <div className="user-details">
-                  <h4 onClick={handleUsernameClick} style={{ cursor: "pointer" }}>
-                    {user?.username}
-                  </h4>
+                  <h4>{user?.username}</h4>
                   <p>{user?.bio || "This user hasn't written a bio yet."}</p>
                   <div className="action-buttons">
                     <button className="btn btn-sm hover:btn-outline-primary hover:text-white action-btn">
@@ -140,9 +132,10 @@ const Profile = () => {
                       </a>
                       <span className="date">{article.createdAt}</span>
                     </div>
+                    {/* Disable like button in "My Articles" tab */}
                     <button 
                       className="btn btn-outline-primary btn-sm pull-xs-right" 
-                      onClick={() => handleLike(article.slug, article.favorited, article.favoritesCount)}
+                      disabled={activeTab === 'myArticles'} // Disable if it's "My Articles" tab
                     >
                       <i className="ion-heart"></i> {article.favoritesCount}
                     </button>
