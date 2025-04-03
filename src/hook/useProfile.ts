@@ -3,17 +3,6 @@ import { getProfile, getArticles } from "@/lib/api"; // API calls
 import { ArticleFormData } from "@/interfaces/article";
 
 // Định nghĩa kiểu dữ liệu của Profile
-interface ProfileData {
-  username: string;
-  bio: string;
-  image: string;
-}
-
-// Định nghĩa kiểu dữ liệu của Article (một bài viết)
-interface ArticleData {
-  articles: ArticleFormData[];
-  articlesCount: number;
-}
 
 // Hook lấy dữ liệu Profile và bài viết của người dùng
 const useProfile = (username: string) => {
