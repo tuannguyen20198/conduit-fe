@@ -1,13 +1,14 @@
-import Spinner from "@/component/Spinner";
+import { useEffect } from "react";
+import { Link, Navigate, useParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import useFeeds from "@/hook/useFeeds";
-import { useEffect } from "react";
+import useProfile from "@/hook/useProfile";
+import Spinner from "@/component/Spinner";
 import ReactPaginate from "react-paginate";
-import { Link, Navigate, useParams } from "react-router-dom";
+import FollowButton from "@/component/FollowButton";
 
 const Profile = () => {
-  const { user } = useAuth();
-  
+  const { user } = useAuth(); // Current authenticated user
   const {
     activeTab,
     setActiveTab,
@@ -18,8 +19,9 @@ const Profile = () => {
     pageCount,
     handlePageClick,
   } = useFeeds(); // Using the updated useFeeds hook
+  const { username } = useParams(); // Lấy username từ URL
+  const { profileData, articlesData } = useProfile(username!);
 
-  const { username } = useParams(); // Get the username from the URL
 
   const articlesPerPage = 10;
 
@@ -63,19 +65,22 @@ const Profile = () => {
             <div className="col-xs-12 col-md-10 offset-md-1">
               <div className="profile-header">
                 <img
-                  src={user?.image || "http://i.imgur.com/Qr71crq.jpg"}
+                  src={profileData?.image || "http://i.imgur.com/Qr71crq.jpg"}
                   className="user-img"
                   alt="User Image"
                 />
                 <div className="user-details">
-                  <h4>{user?.username}</h4>
-                  <p>{user?.bio || "This user hasn't written a bio yet."}</p>
-                  <div className="action-buttons">
-                    <button className="btn btn-sm hover:btn-outline-primary hover:text-white action-btn">
-                      <i className="ion-plus-round"></i> Follow {user?.username}
-                    </button>
+                  <h4>{profileData?.username}</h4>
+                  <p>{profileData?.bio || "This user hasn't written a bio yet."}</p>
+                  <div className="action-buttons" style={{ display: 'flex', gap: '8px',justifyContent: 'center' }}>
+                    {/* Nút Follow (nếu không phải là chính mình) */}
+                    {profileData?.username !== user?.username && (
+                      <FollowButton profileUsername={profileData?.username || ""} />
+                    )}
+
+                    {/* Nút chỉnh sửa thông tin */}
                     <button className="btn btn-sm btn-outline-secondary action-btn">
-                      <Link to="/settings" ><i className="ion-gear-a"></i> Edit Profile Settings</Link>
+                      <Link to="/settings"><i className="ion-gear-a"></i> Edit Profile Settings</Link>
                     </button>
                   </div>
                 </div>
@@ -91,8 +96,8 @@ const Profile = () => {
             <div className="articles-toggle">
               <ul className="nav nav-pills outline-active">
                 <li className="nav-item">
-                  <a 
-                    className={`nav-link ${activeTab === 'myArticles' ? 'active' : ''}`} 
+                  <a
+                    className={`nav-link ${activeTab === 'myArticles' ? 'active' : ''}`}
                     onClick={() => handleTabClick('myArticles')}
                     href="#"
                   >
@@ -100,8 +105,8 @@ const Profile = () => {
                   </a>
                 </li>
                 <li className="nav-item">
-                  <a 
-                    className={`nav-link ${activeTab === 'favoritedArticles' ? 'active' : ''}`} 
+                  <a
+                    className={`nav-link ${activeTab === 'favoritedArticles' ? 'active' : ''}`}
                     onClick={() => handleTabClick('favoritedArticles')}
                     href="#"
                   >
@@ -133,8 +138,8 @@ const Profile = () => {
                       <span className="date">{article.createdAt}</span>
                     </div>
                     {/* Disable like button in "My Articles" tab */}
-                    <button 
-                      className="btn btn-outline-primary btn-sm pull-xs-right" 
+                    <button
+                      className="btn btn-outline-primary btn-sm pull-xs-right"
                       disabled={activeTab === 'myArticles'} // Disable if it's "My Articles" tab
                     >
                       <i className="ion-heart"></i> {article.favoritesCount}
