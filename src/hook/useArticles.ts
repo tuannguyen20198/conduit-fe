@@ -1,10 +1,11 @@
 import { useAuth } from "@/context/AuthContext";
-import { createArticle } from "@/lib/api";
-import { useState } from "react";
+import { createArticle, getArticleBySlug, updateArticle } from "@/lib/api";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const useArticles = (refreshArticles?: () => void) => {
+  const { articleId } = useParams(); // Lấy articleId nếu có
   const {
     register,
     handleSubmit,
@@ -12,65 +13,70 @@ const useArticles = (refreshArticles?: () => void) => {
     setError,
     clearErrors,
     formState: { errors },
-  } = useForm<{ tags: string[] }>({
+  } = useForm<{ tags: string[]; title: string; description: string }>({
     mode: "onSubmit",
-    defaultValues: { tags: [] }, // ✅ Đảm bảo `tags` là array từ đầu
+    defaultValues: { tags: [] },
   });
-
-  const [apiErrors, setApiErrors] = useState<string[]>([]); // Lưu lỗi từ API
-  const [tags, setTags] = useState<string[]>([]); // State lưu tags
+  const [apiErrors, setApiErrors] = useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
   const navigate = useNavigate();
   const { user } = useAuth();
 
   const handleTagsChange = (tags: string[]) => {
-    setValue("tags", tags); // ✅ Cập nhật `tags` vào form
-    if (tags.length > 0) clearErrors("tags"); // ✅ Xóa lỗi nếu có
+    setValue("tags", tags); // Cập nhật tags vào form
+    if (tags.length > 0) clearErrors("tags");
   };
 
-  const handlePageClick = (event: { selected: number }) => {
-    const newPage = event.selected + 1;
-
-    newPage;
-
-    // ✅ Đảm bảo fetch lại dữ liệu ngay lập tức khi page thay đổi
-    createArticle(newPage);
-  };
-  const onSubmit = async (data: any) => {
-    console.log("🚀 Dữ liệu form trước khi gửi:", data);
+  const onSubmitArticles = async (data: any) => {
     if (!data.tags || data.tags.length === 0) {
       setError("tags", { type: "required", message: "Tags is required" });
       return;
     }
-    console.log("Final Payload:", data); // ✅ Kiểm tra dữ liệu gửi đi
-  };
 
-  const onSubmitArticles = async (data: any) => {
-    try {
+    if (articleId) {
+      // Nếu có articleId thì gọi hàm update
+      await updateArticle(articleId, data);
+    } else {
+      // Nếu không có articleId thì gọi hàm create
       await createArticle(data);
-      alert("Bài viết đã được đăng");
-
-      // ✅ Cập nhật lại danh sách bài viết mà không reload
-      refreshArticles?.();
-
-      // ✅ Điều hướng về trang chủ mà không refresh
-      navigate("/", { replace: true });
-    } catch (err: any) {
-      setApiErrors([err.message || "Đã xảy ra lỗi!"]);
     }
   };
+
+  const updateArticle = async (articleId: string, data: any) => {
+    try {
+      await updateArticle(articleId, data);
+      alert("Bài viết đã được cập nhật");
+      refreshArticles?.();
+      navigate("/", { replace: true });
+    } catch (err: any) {
+      setApiErrors([err.message || "Đã xảy ra lỗi khi cập nhật bài viết!"]);
+    }
+  };
+
+  // Load bài viết khi có articleId
+  useEffect(() => {
+    if (articleId) {
+      const fetchArticleData = async () => {
+        const articleData = await getArticleBySlug(articleId);
+        setValue("title", articleData.title);
+        setValue("description", articleData.description);
+        setValue("tags", articleData.tagList || []);
+      };
+
+      fetchArticleData();
+    }
+  }, [articleId, setValue]);
+
   return {
     register,
     handleSubmit,
-    onSubmit,
-    user,
     onSubmitArticles,
-    handlePageClick,
-    errors,
+    user,
     apiErrors,
-    setApiErrors,
     tags,
     setTags,
     handleTagsChange,
+    errors,
   };
 };
 
