@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import axios from 'axios';
 import api from '@/lib/axiosConfig';
-
+import ReactMarkdown from 'react-markdown';
+import { MDXEditor } from '@mdxeditor/editor';
+import rehypeRaw from 'rehype-raw';
+import Comment from '@/component/Comment';
 // Định nghĩa kiểu cho bài viết (Article)
 interface Author {
   username: string;
@@ -18,7 +20,7 @@ interface Article {
   author: Author;
   favoritesCount: number;
   tagList: string[];
-  slug: string; // Đảm bảo slug tồn tại trong dữ liệu bài viết
+  slug: string;
 }
 
 const Article = () => {
@@ -29,7 +31,7 @@ const Article = () => {
   const [article, setArticle] = useState<Article | null>(null); // Chỉ định kiểu dữ liệu cho `article`
   const [loading, setLoading] = useState(true); // Trạng thái loading
   const [error, setError] = useState<string | null>(null); // Lỗi khi gọi API
-  console.log(article);
+  const [isFollowing, setIsFollowing] = useState(false); // Trạng thái theo dõi (Follow/Unfollow)
 
   // Gọi API để lấy bài viết
   useEffect(() => {
@@ -47,14 +49,43 @@ const Article = () => {
     if (slug) {
       fetchArticle(); // Chỉ gọi khi slug có giá trị
     }
-  }, [slug]); // Chỉ gọi lại khi `slug` thay đổi
+  }, [slug]);
 
-  // Handle follow user
-  const handleFollow = async (username: string) => {
+  // Check if the user is already following the author
+  useEffect(() => {
+    if (user && article) {
+      setIsFollowing(article.author.username === user.username || (user.following as string[])?.includes(article.author.username));
+    }
+  }, [user, article]);
+
+  // Handle follow/unfollow user
+  const handleFollowToggle = async (username: string) => {
     try {
-      const response = await api.post(`/profiles/${username}/follow`);
-    //   return response.data;
-      alert('Followed successfully');
+      if (isFollowing) {
+        // Call handleUnfollow function if already following
+        await handleUnfollow(username);
+      } else {
+        // Follow user
+        await api.post(`/profiles/${username}/follow`);
+        setIsFollowing(true); // Update local state
+        alert('Followed successfully');
+      }
+    } catch (err) {
+      if (err instanceof Error) {
+        alert(`Error: ${err.message}`);
+      } else {
+        alert('An unknown error occurred');
+      }
+    }
+  };
+
+  // Handle unfollow user
+  const handleUnfollow = async (username: string) => {
+    try {
+      // Send the unfollow request
+      await api.delete(`/profiles/${username}/follow`);
+      setIsFollowing(false); // Update local state after unfollow
+      alert('Unfollowed successfully');
     } catch (err) {
       if (err instanceof Error) {
         alert(`Error: ${err.message}`);
@@ -71,9 +102,9 @@ const Article = () => {
       setArticle((prevArticle) =>
         prevArticle
           ? {
-              ...prevArticle,
-              favoritesCount: response.data.article.favoritesCount,
-            }
+            ...prevArticle,
+            favoritesCount: response.data.article.favoritesCount,
+          }
           : prevArticle
       );
     } catch (err) {
@@ -85,7 +116,6 @@ const Article = () => {
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this article?')) {
       try {
-        // Kiểm tra nếu người dùng là tác giả của bài viết trước khi cho phép xóa
         if (user && article?.author.username === user.username) {
           await api.delete(`/articles/${slug}`);
           alert('Article deleted');
@@ -120,11 +150,11 @@ const Article = () => {
               <span className="date">{article.createdAt}</span>
             </div>
 
-            {/* Kiểm tra nếu người dùng không phải là tác giả thì hiển thị nút Follow */}
+            {/* Kiểm tra nếu người dùng không phải là tác giả thì hiển thị nút Follow/Unfollow */}
             {user && user?.username !== article.author?.username && (
-              <button className="btn btn-sm btn-outline-secondary" onClick={() => handleFollow(article.author?.username)}>
-                <i className="ion-plus-round" />
-                &nbsp; Follow {article.author?.username}
+              <button className="btn btn-sm btn-outline-secondary" onClick={() => handleFollowToggle(article.author?.username)}>
+                <i className={isFollowing ? 'ion-minus-round' : 'ion-plus-round'} />
+                &nbsp; {isFollowing ? `Unfollow ${article.author?.username}` : `Follow ${article.author?.username}`}
               </button>
             )}
 
@@ -152,7 +182,7 @@ const Article = () => {
       <div className="container page">
         <div className="row article-content">
           <div className="col-md-12">
-            <p>{article.body}</p>
+            <ReactMarkdown rehypePlugins={[rehypeRaw]}>{article.body}</ReactMarkdown>
             <ul className="tag-list">
               {article.tagList?.map((tag) => (
                 <li className="tag-default tag-pill tag-outline" key={tag}>
@@ -164,6 +194,7 @@ const Article = () => {
         </div>
         <hr />
       </div>
+      <Comment/>
     </div>
   );
 };
