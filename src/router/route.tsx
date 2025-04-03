@@ -24,7 +24,7 @@ const router = createBrowserRouter([
       { path: "register", element: <Suspense fallback={<Spinner />}><Register /></Suspense> },
       { path: "settings", element: <Suspense fallback={<Spinner />}><SettingsPage /></Suspense> },
       { path: "editor", element: <Suspense fallback={<Spinner />}><Article /></Suspense> },
-      // { path: "article/:slug", element: <Suspense fallback={<Spinner />}><ArticleForm /></Suspense> },
+      { path: "article/:slug", element: <Suspense fallback={<Spinner />}><Article /></Suspense> },
       { path: "profile/:username", element: <Suspense fallback={<Spinner />}><Profile /></Suspense> },
       { path: "profile/:username/favorites", element: <Suspense fallback={<Spinner />}><Profile /></Suspense> },
     ],
