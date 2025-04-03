@@ -5,7 +5,7 @@ import FormInput from "./FormInput";
 import FormTags from "./FormTags";
 import { getArticleBySlug, createArticle, updateArticle } from "@/lib/api"; // Hàm gọi API lấy bài viết theo slug và cập nhật bài viết
 
-const ArticleForm = ({ onSubmit, apiErrors }: any) => {
+const EditorForm = ({ onSubmit, apiErrors }: any) => {
   const { slug } = useParams(); // Lấy slug từ URL
   const methods = useForm({ mode: "onChange" });
   const { handleSubmit, setValue, formState: { errors } } = methods;
@@ -104,4 +104,4 @@ const ArticleForm = ({ onSubmit, apiErrors }: any) => {
   );
 };
 
-export default ArticleForm;
+export default EditorForm;
