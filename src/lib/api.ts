@@ -182,3 +182,12 @@ export const updateArticle = async (slug: string, article: any) => {
     throw error; // Nếu có lỗi, throw lỗi để xử lý
   }
 };
+
+export const deleteArticle = async (slug: string) => {
+  try {
+    const { data } = await api.delete(`/articles/${slug}`); // Gửi API yêu cầu xóa bài viết
+    return data; // Trả về dữ liệu bài viết sau khi được xóa
+  } catch (error) {
+    throw error;
+  }
+};

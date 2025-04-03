@@ -1,6 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
-import useArticles from "@/hook/useArticles";
+import useArticles from "@/hook/useEditor";
 import EditorForm from "@/component/ArticleForm";
 
 const Editor = () => {

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 
-const useArticles = (refreshArticles?: () => void) => {
+const useEditor = (refreshArticles?: () => void) => {
   const { articleId } = useParams(); // Lấy articleId nếu có
   const {
     register,
@@ -80,4 +80,4 @@ const useArticles = (refreshArticles?: () => void) => {
   };
 };
 
-export default useArticles;
+export default useEditor;
