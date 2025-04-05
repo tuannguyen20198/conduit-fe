@@ -143,7 +143,7 @@ export const getTags = async () => {
 export const getArticleBySlug = async (slug: string) => {
   try {
     const response = await api.post(`/articles/${slug}`);
-    return response.data.article;
+    return response.data.article.article;
   } catch (error) {
     console.error("Error fetching article:", error);
   }
