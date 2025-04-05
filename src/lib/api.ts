@@ -68,18 +68,58 @@ export const updateUser = async (
 };
 
 // ✅ Lấy danh sách bài viết
-export const getArticles = async (params: any) => {
-  const url = params.feed ? "/feed" : `/articles`;
+export const getArticlesGeneral = async (params: any) => {
+  const { author, tag, offset, limit, favorites } = params;
+
+  const url = "/articles"; // Endpoint cho các bài viết thông thường
+
+  // Xây dựng query string
+  const queryParams = new URLSearchParams();
+
+  if (author) queryParams.append("author", author); // Thêm author vào query string nếu có
+  if (tag) queryParams.append("tag", tag); // Thêm tag vào query string nếu có
+  if (offset !== undefined) queryParams.append("offset", String(offset)); // Thêm offset vào query string nếu có
+  if (limit !== undefined) queryParams.append("limit", String(limit)); // Thêm limit vào query string nếu có
+  if (favorites) queryParams.append("favorites", favorites); // Thêm favorites vào query string nếu có
+
+  const finalUrl = `${url}?${queryParams.toString()}`;
+
+  console.log("Calling URL for General Articles:", finalUrl); // Log URL để kiểm tra
 
   try {
-    const response = await api.get(url, { params });
+    const response = await api.get(finalUrl); // Gọi API với URL đã xây dựng
     return response.data;
   } catch (error) {
-    console.error("Error fetching articles:", error);
+    console.error("Error fetching general articles:", error);
     throw error;
   }
 };
+export const getArticlesFeed = async (params: any) => {
+  const { author, tag, offset, limit, favorites } = params;
 
+  const url = "/articles/feed"; // Endpoint cho feed của người dùng
+
+  // Xây dựng query string
+  const queryParams = new URLSearchParams();
+
+  if (author) queryParams.append("author", author); // Thêm author vào query string nếu có
+  if (tag) queryParams.append("tag", tag); // Thêm tag vào query string nếu có
+  if (offset !== undefined) queryParams.append("offset", String(offset)); // Thêm offset vào query string nếu có
+  if (limit !== undefined) queryParams.append("limit", String(limit)); // Thêm limit vào query string nếu có
+  if (favorites) queryParams.append("favorites", favorites); // Thêm favorites vào query string nếu có
+
+  const finalUrl = `${url}?${queryParams.toString()}`;
+
+  console.log("Calling URL for Feed:", finalUrl); // Log URL để kiểm tra
+
+  try {
+    const response = await api.get(finalUrl); // Gọi API với URL đã xây dựng
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching articles from feed:", error);
+    throw error;
+  }
+};
 // ✅ Lấy thông tin bài viết theo slug
 export const getArticle = async (slug: string) => {
   try {
