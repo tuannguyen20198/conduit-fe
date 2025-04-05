@@ -35,7 +35,9 @@ const useFeeds = () => {
   const { data: tags } = useTags();
   const pageCount = Math.max(1, Math.ceil(totalArticles / articlesPerPage));
   const navigate = useNavigate();
-
+  const simulateDelay = (ms: number) => {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  };
   // Chạy khi hash trong URL thay đổi
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
@@ -49,7 +51,7 @@ const useFeeds = () => {
   const fetchArticles = async () => {
     setIsLoading(true);
     const startTime = Date.now();
-
+    await simulateDelay(500);
     try {
       let url = "/articles";
       let params: any = {
