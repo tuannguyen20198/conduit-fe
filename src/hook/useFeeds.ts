@@ -109,27 +109,32 @@ const useFeeds = () => {
     );
     const currentLikes = storedLikes[slug] || [];
 
+    // Kiểm tra xem người dùng đã like bài viết chưa
     const updatedFavorited = !currentLikes.includes(user.username);
 
+    // Cập nhật số lượt like
     const updatedFavoritesCount = updatedFavorited
-      ? validFavoritesCount + 1
-      : Math.max(validFavoritesCount - 1, 0);
+      ? validFavoritesCount + 1 // Tăng số lượt like khi người dùng like
+      : validFavoritesCount - 1; // Giảm số lượt like khi người dùng un-like
 
+    // Cập nhật danh sách "likedBy"
     const updatedLikedBy = updatedFavorited
-      ? [...currentLikes, user.username]
-      : currentLikes.filter((username: string) => username !== user.username);
+      ? [...currentLikes, user.username] // Thêm người dùng vào danh sách "likedBy"
+      : currentLikes.filter((username: string) => username !== user.username); // Xóa người dùng khỏi danh sách "likedBy"
 
+    // Lưu danh sách "likedArticles" vào localStorage
     storedLikes[slug] = updatedLikedBy;
     localStorage.setItem("likedArticles", JSON.stringify(storedLikes));
 
+    // Cập nhật lại bài viết trong state
     setArticles((prev) =>
       prev.map((article) =>
         article.slug === slug
           ? {
               ...article,
               favorited: updatedFavorited,
-              favoritesCount: updatedFavoritesCount,
-              likedBy: updatedLikedBy,
+              favoritesCount: updatedFavoritesCount, // Cập nhật đúng số lượt like
+              likedBy: updatedLikedBy, // Cập nhật danh sách người đã like
             }
           : article
       )
@@ -137,12 +142,15 @@ const useFeeds = () => {
 
     try {
       if (updatedFavorited) {
+        // Gọi API để thêm bài viết vào danh sách yêu thích
         await favoriteArticle(slug);
       } else {
+        // Gọi API để hủy bài viết khỏi danh sách yêu thích
         await unfavoriteArticle(slug);
       }
     } catch (err) {
       console.error("Lỗi khi cập nhật trạng thái yêu thích:", err);
+      // Nếu có lỗi, phục hồi lại trạng thái ban đầu
       setArticles((prev) =>
         prev.map((article) =>
           article.slug === slug
@@ -151,7 +159,7 @@ const useFeeds = () => {
                 favorited: favorited,
                 favoritesCount: favorited
                   ? validFavoritesCount + 1
-                  : Math.max(validFavoritesCount - 1, 0),
+                  : validFavoritesCount - 1,
               }
             : article
         )
