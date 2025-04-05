@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getProfile, getArticles } from "@/lib/api"; // API calls
+import { getArticlesGeneral, getProfile } from "@/lib/api"; // API calls
 import { ArticleFormData } from "@/interfaces/article";
 
 // Định nghĩa kiểu dữ liệu của Profile
@@ -26,7 +26,7 @@ const useProfile = (username: string) => {
   } = useQuery<ArticleData>({
     queryKey: ["articles", username],
     queryFn: () =>
-      getArticles({
+      getArticlesGeneral({
         author: username, // Chỉ lấy bài viết của tác giả có username là tham số
         limit: 10, // Giới hạn số lượng bài viết, bạn có thể thay đổi
       }),

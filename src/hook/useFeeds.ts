@@ -60,7 +60,7 @@ const useFeeds = () => {
       // Logic để thay đổi endpoint và params khi ở tab "your"
       if (activeTab === "your" && authToken) {
         url = "/articles/feed"; // Đổi thành endpoint cho "Your Feed"
-        params = { ...params, author: "username_from_auth_token" }; // Bạn cần thay thế author bằng thông tin user thực tế
+        // params = { ...params, author: "username_from_auth_token" }; // Bạn cần thay thế author bằng thông tin user thực tế
       } else if (activeTab === "global") {
         url = "/articles"; // Global feed
       } else if (activeTab === "tag" && selectedTags.length > 0) {

@@ -1,5 +1,5 @@
 import { useAuth } from "@/context/AuthContext";
-import { createArticle, getArticleBySlug, updateArticle } from "@/lib/api";
+import { createArticle, getArticleBySlug } from "@/lib/api"; // Đảm bảo `getArticleBySlug` sử dụng POST
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
@@ -44,6 +44,7 @@ const useEditor = (refreshArticles?: () => void) => {
 
   const updateArticle = async (articleId: string, data: any) => {
     try {
+      // Gọi API để cập nhật bài viết với phương thức POST
       await updateArticle(articleId, data);
       alert("Bài viết đã được cập nhật");
       refreshArticles?.();
@@ -53,16 +54,26 @@ const useEditor = (refreshArticles?: () => void) => {
     }
   };
 
-  // Load bài viết khi có articleId
-  useEffect(() => {
+  // Cập nhật hàm gọi API POST để lấy bài viết
+  const fetchArticleData = async () => {
     if (articleId) {
-      const fetchArticleData = async () => {
+      try {
+        // Gọi API POST thay vì GET
         const articleData = await getArticleBySlug(articleId);
         setValue("title", articleData.title);
         setValue("description", articleData.description);
         setValue("tags", articleData.tagList || []);
-      };
+      } catch (err) {
+        setApiErrors([
+          (err as Error).message || "Đã xảy ra lỗi khi tải bài viết!",
+        ]);
+      }
+    }
+  };
 
+  // Load bài viết khi có articleId
+  useEffect(() => {
+    if (articleId) {
       fetchArticleData();
     }
   }, [articleId, setValue]);

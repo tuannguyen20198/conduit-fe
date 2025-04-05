@@ -113,7 +113,7 @@ export const getArticlesFeed = async (params: any) => {
   console.log("Calling URL for Feed:", finalUrl); // Log URL để kiểm tra
 
   try {
-    const response = await api.get(finalUrl); // Gọi API với URL đã xây dựng
+    const response = await api.post(finalUrl); // Gọi API với URL đã xây dựng
     return response.data;
   } catch (error) {
     console.error("Error fetching articles from feed:", error);
@@ -142,13 +142,10 @@ export const getTags = async () => {
 
 export const getArticleBySlug = async (slug: string) => {
   try {
-    const response = await api.get(`/articles/${slug}`);
-    const data = response.data.article.article;
-    console.log(data);
-    return data; // Trả về dữ liệu bài viết
+    const response = await api.post(`/articles/${slug}`);
+    return response.data.article;
   } catch (error) {
-    console.error("Error fetching article", error);
-    throw error; // Ném lỗi nếu không lấy được dữ liệu
+    console.error("Error fetching article:", error);
   }
 };
 

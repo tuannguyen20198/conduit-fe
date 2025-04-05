@@ -37,7 +37,7 @@ const Article = () => {
   useEffect(() => {
     const fetchArticle = async () => {
       try {
-        const response = await api.get(`/articles/${slug}`);
+        const response = await api.post(`/articles/${slug}`);
         setArticle(response.data.article.article); // Lưu trữ dữ liệu bài viết vào state
         setLoading(false); // Đổi trạng thái loading
       } catch (error) {
