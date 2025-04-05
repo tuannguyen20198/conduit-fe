@@ -1,3 +1,4 @@
+import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/axiosConfig";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -17,7 +18,7 @@ const Comment = () => {
     const { slug } = useParams();
     const [commentText, setCommentText] = useState(''); // State cho input comment
     const [comments, setComments] = useState<Comment[]>([]); // State lưu trữ comment
-    const user = { username: 'defaultUser', image: 'http://i.imgur.com/Qr71crq.jpg' }; // Thông tin người dùng mock
+    const {user} = useAuth(); // Thông tin người dùng mock
 
     // Lấy danh sách comment khi component render lần đầu
     useEffect(() => {
@@ -83,7 +84,7 @@ const Comment = () => {
                         />
                     </div>
                     <div className="card-footer">
-                        <img src={user.image} className="comment-author-img" alt="user" />
+                        <img src={user?.image || 'http://i.imgur.com/Qr71crq.jpg'} className="comment-author-img" alt="user" />
                         <button className="btn btn-sm btn-primary">Post Comment</button>
                     </div>
                 </form>
@@ -112,7 +113,7 @@ const Comment = () => {
                             <span className="date-posted">{comment.createdAt}</span>
 
                             {/* Kiểm tra nếu người dùng là tác giả của comment mới cho phép xóa */}
-                            {user?.username  && (
+                            {user?.username === comment.author.username && (
                                 <span
                                     className="mod-options justify-center align-middle"
                                     style={{
