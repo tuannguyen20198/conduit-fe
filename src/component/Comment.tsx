@@ -1,7 +1,8 @@
 import api from "@/lib/axiosConfig";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 
-// Define the Comment type
+// Định nghĩa loại Comment
 interface Comment {
     id: string;
     body: string;
@@ -11,34 +12,48 @@ interface Comment {
     };
     createdAt: string;
 }
-import { useParams } from "react-router-dom";
 
 const Comment = () => {
-    const [commentText, setCommentText] = useState(''); // State for comment input
-    const [comments, setComments] = useState<Comment[]>([]); // State to store comments
     const { slug } = useParams();
-    const user = { username: 'defaultUser', image: 'http://i.imgur.com/Qr71crq.jpg' }; // Mock user object
-    // Post a new comment
+    const [commentText, setCommentText] = useState(''); // State cho input comment
+    const [comments, setComments] = useState<Comment[]>([]); // State lưu trữ comment
+    const user = { username: 'defaultUser', image: 'http://i.imgur.com/Qr71crq.jpg' }; // Thông tin người dùng mock
+
+    // Lấy danh sách comment khi component render lần đầu
+    useEffect(() => {
+        const fetchComments = async () => {
+            try {
+                const response = await api.get(`/articles/${slug}/comments`);
+                setComments(response.data.comments); // Lưu lại comment trong state
+            } catch (error) {
+                alert('Error loading comments');
+            }
+        };
+
+        fetchComments();
+    }, [slug]); // Khi slug thay đổi, gọi lại API để lấy comment mới
+
+    // Đăng bài comment mới
     const handlePostComment = async () => {
-        if (!commentText.trim()) return; // Don't post empty comments
+        if (!commentText.trim()) return; // Không đăng khi comment trống
 
         try {
             const response = await api.post(`/articles/${slug}/comments`, {
                 comment: { body: commentText },
             });
-            setComments([response.data.comment, ...comments]); // Add the new comment to the list
-            setCommentText(''); // Clear the comment input
+            setComments([response.data.comment, ...comments]); // Thêm comment mới vào đầu danh sách
+            setCommentText(''); // Xóa input sau khi gửi
         } catch (error) {
             alert('Error posting comment');
         }
     };
 
-    // Delete a comment
+    // Xóa comment
     const handleDeleteComment = async (commentId: string) => {
         try {
             if (window.confirm('Are you sure you want to delete this comment?')) {
                 await api.delete(`/articles/${slug}/comments/${commentId}`);
-                setComments(comments.filter((comment) => comment.id !== commentId)); // Remove deleted comment from list
+                setComments(comments.filter((comment) => comment.id !== commentId)); // Loại bỏ comment bị xóa khỏi danh sách
                 alert('Comment deleted');
             }
         } catch (err) {
@@ -47,11 +62,17 @@ const Comment = () => {
         }
     };
 
-
     return (
         <div className="row">
             <div className="col-xs-12 col-md-8 offset-md-2">
-                <form className="card comment-form" onSubmit={(e) => { e.preventDefault(); handlePostComment(); }}>
+                {/* Form để đăng comment */}
+                <form
+                    className="card comment-form"
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        handlePostComment();
+                    }}
+                >
                     <div className="card-block">
                         <textarea
                             className="form-control"
@@ -62,29 +83,46 @@ const Comment = () => {
                         />
                     </div>
                     <div className="card-footer">
-                        <img src={user.image} className="comment-author-img" />
+                        <img src={user.image} className="comment-author-img" alt="user" />
                         <button className="btn btn-sm btn-primary">Post Comment</button>
                     </div>
                 </form>
 
-                {/* Display Comments */}
+                {/* Hiển thị danh sách comment */}
                 {comments.map((comment) => (
                     <div className="card" key={comment.id}>
                         <div className="card-block">
                             <p className="card-text">{comment.body}</p>
                         </div>
                         <div className="card-footer">
-                            <a href={`/profile/${comment.author.username}`} className="comment-author">
-                                <img src={comment.author.image || 'http://i.imgur.com/Qr71crq.jpg'} className="comment-author-img" />
+                            <a
+                                href={`/profile/${comment.author.username}`}
+                                className="comment-author"
+                            >
+                                <img
+                                    src={comment.author.image || 'http://i.imgur.com/Qr71crq.jpg'}
+                                    className="comment-author-img"
+                                    alt="author"
+                                />
                             </a>
                             &nbsp;
-                            <a href={`/profile/${comment.author.username}`} className="comment-author">{comment.author.username}</a>
+                            <a href={`/profile/${comment.author.username}`} className="comment-author">
+                                {comment.author.username}
+                            </a>
                             <span className="date-posted">{comment.createdAt}</span>
 
-                            {/* Show delete option only for the comment owner */}
-                            {user?.username === comment.author.username && (
-                                <span className="mod-options" onClick={() => handleDeleteComment(comment.id)}>
-                                    <i className="ion-trash-a" />
+                            {/* Kiểm tra nếu người dùng là tác giả của comment mới cho phép xóa */}
+                            {user?.username  && (
+                                <span
+                                    className="mod-options justify-center align-middle"
+                                    style={{
+                                        cursor: 'pointer',
+                                        color: 'red', // Bạn có thể thay đổi màu sắc nếu cần
+                                        fontSize: '24px', // Đảm bảo icon có kích thước đủ lớn
+                                    }}
+                                    onClick={() => handleDeleteComment(comment.id)}
+                                >
+                                    <i className="ion-trash-a"></i> {/* Biểu tượng xóa */}
                                 </span>
                             )}
                         </div>
@@ -92,7 +130,7 @@ const Comment = () => {
                 ))}
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Comment
+export default Comment;

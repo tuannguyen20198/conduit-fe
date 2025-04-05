@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "ionicons/dist/css/ionicons.min.css";
 
 .pagination {
   display: flex;
