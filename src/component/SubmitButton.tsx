@@ -5,7 +5,7 @@ import { useFormContext } from "react-hook-form";
 
 const SubmitButton = ({ label }: SubmitButtonProps) => {
   const {
-    formState: {  },
+    formState: {},
   } = useFormContext();
 
   return (

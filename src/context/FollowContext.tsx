@@ -1,10 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Tạo context để lưu trạng thái follow
-interface FollowContextType {
-  following: Record<string, boolean>; // Lưu trạng thái follow cho mỗi người dùng
-  setFollowing: (username: string, following: boolean) => void;
-}
+
 
 const FollowContext = createContext<FollowContextType | undefined>(undefined);
 
