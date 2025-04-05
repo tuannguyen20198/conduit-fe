@@ -155,22 +155,67 @@ const useFeeds = () => {
   const handleFollow = async (username: string, following: boolean) => {
     try {
       const updatedUser = following
-        ? await unfollowUser(username)
-        : await followUser(username);
-      setArticles((prevArticles) =>
-        prevArticles.map((article) =>
-          article.author.username === username
-            ? {
-                ...article,
-                author: { ...article.author, following: updatedUser.following },
-              }
-            : article
-        )
+        ? await unfollowUser(username) // nếu đang follow, gọi API unfollow
+        : await followUser(username); // nếu chưa follow, gọi API follow
+
+      // Lưu trạng thái follow vào localStorage
+      const followingData = JSON.parse(
+        localStorage.getItem("followingData") || "{}"
       );
+      followingData[username] = updatedUser.following;
+      localStorage.setItem("followingData", JSON.stringify(followingData));
+
+      // Cập nhật lại bài viết sau khi thực hiện hành động follow/unfollow
+      setArticles((prevArticles) => {
+        if (prevArticles && !Array.isArray(prevArticles)) {
+          console.error("prevArticles is not an array:", prevArticles);
+          return []; // Trả về mảng rỗng nếu không phải mảng
+        }
+
+        return Array.isArray(prevArticles)
+          ? prevArticles.map((article) =>
+              article.author.username === username
+                ? {
+                    ...article,
+                    author: {
+                      ...article.author,
+                      following: updatedUser.following, // Cập nhật trạng thái follow của tác giả bài viết
+                    },
+                  }
+                : article
+            )
+          : [];
+      });
     } catch (err) {
       console.error("Error updating follow status", err);
     }
   };
+
+  // Khôi phục trạng thái follow từ localStorage khi reload trang
+  useEffect(() => {
+    const followingData = JSON.parse(
+      localStorage.getItem("followingData") || "{}"
+    );
+
+    setArticles((prevArticles) => {
+      if (Array.isArray(prevArticles)) {
+        return prevArticles.map((article) => {
+          const isFollowing = followingData[article.author.username];
+          return {
+            ...article,
+            author: {
+              ...article.author,
+              following:
+                isFollowing !== undefined
+                  ? isFollowing
+                  : article.author.following,
+            },
+          };
+        });
+      }
+      return prevArticles;
+    });
+  }, []);
 
   // Cập nhật khi click tag
   const handleTagClick = (tag: string) => {

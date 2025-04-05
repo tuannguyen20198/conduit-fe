@@ -3,12 +3,15 @@ import { createRoot } from 'react-dom/client'
 import TanstackQueryProvider from './lib/tanstack-query-provider'
 import App from './App'
 import { AuthProvider } from './context/AuthContext'
+import { FollowProvider } from './context/FollowContext'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <TanstackQueryProvider>
       <AuthProvider>
-        <App />
+        <FollowProvider>
+          <App />
+        </FollowProvider>
       </AuthProvider>
     </TanstackQueryProvider>
   </StrictMode>,
