@@ -1,27 +1,36 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Tạo context để lưu trạng thái follow
-
+// Define FollowContextType
+interface FollowContextType {
+  following: Record<string, boolean>;
+  setFollowing: (username: string, following: boolean) => void;
+}
 
 const FollowContext = createContext<FollowContextType | undefined>(undefined);
 
-// Cung cấp context cho toàn bộ ứng dụng
+// FollowProvider component to provide the context
 export const FollowProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [following, setFollowingState] = useState<Record<string, boolean>>({});
 
-  // Khi trang được tải lại, lấy trạng thái follow từ localStorage
+  // Load the following data from localStorage when the component mounts
   useEffect(() => {
     const savedFollowing = localStorage.getItem("followingData");
     if (savedFollowing) {
-      setFollowingState(JSON.parse(savedFollowing)); // Cập nhật lại trạng thái follow từ localStorage
+      setFollowingState(JSON.parse(savedFollowing)); // Set state from localStorage
     }
   }, []);
 
+  // setFollowing function to update follow status and persist it in localStorage
   const setFollowing = (username: string, following: boolean) => {
+    // Only update if the follow status has changed to avoid unnecessary re-renders
     setFollowingState((prevFollowing) => {
-      const updatedFollowing = { ...prevFollowing, [username]: following };
-      localStorage.setItem("followingData", JSON.stringify(updatedFollowing)); // Lưu vào localStorage
-      return updatedFollowing;
+      // Check if the current follow status is different from the new status
+      if (prevFollowing[username] !== following) {
+        const updatedFollowing = { ...prevFollowing, [username]: following };
+        localStorage.setItem("followingData", JSON.stringify(updatedFollowing)); // Store updated state in localStorage
+        return updatedFollowing;
+      }
+      return prevFollowing; // No change, return the previous state
     });
   };
 
@@ -32,7 +41,7 @@ export const FollowProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   );
 };
 
-// Hook để sử dụng FollowContext
+// Hook to use FollowContext in components
 export const useFollow = (): FollowContextType => {
   const context = useContext(FollowContext);
   if (!context) {

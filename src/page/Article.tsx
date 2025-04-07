@@ -141,13 +141,13 @@ const Article = () => {
         <div className="container">
           <h1>{article.title}</h1>
           <div className="article-meta">
-            <a href={`/profile/${article.author?.username}`}>
+            <Link to={`/profile/${article.author?.username}`}>
               <img src={article.author?.image || 'http://i.imgur.com/Qr71crq.jpg'} alt="author" />
-            </a>
+            </Link>
             <div className="info">
-              <a href={`/profile/${article.author?.username}`} className="author">
+              <Link to={`/profile/${article.author?.username}`} className="author">
                 {article.author?.username}
-              </a>
+              </Link>
               <span className="date">{article.createdAt}</span>
             </div>
 
