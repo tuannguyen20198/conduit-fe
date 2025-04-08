@@ -1,5 +1,4 @@
 import { useAuth } from "@/context/AuthContext";
-import { ArticleFormData } from "@/interfaces/article";
 import React, { useEffect, useState } from "react";
 import { useTags } from "./useTags";
 import {

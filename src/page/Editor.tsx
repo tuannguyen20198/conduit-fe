@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import useArticles from "@/hook/useEditor";
-import EditorForm from "@/component/ArticleForm";
+import EditorForm from "@/component/EditorForm";
 
 const Editor = () => {
   const [apiErrors] = useState<string[]>([]);

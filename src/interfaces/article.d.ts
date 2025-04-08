@@ -1,4 +1,5 @@
 interface Author {
+  [x: string]: any;
   username: string;
   image: string;
 }
