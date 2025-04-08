@@ -1,4 +1,4 @@
-export interface FormInputProps {
+interface FormInputProps {
   name: string;
   placeholder?: string;
   type?: "text" | "textarea" | "markdown" | "password" | "email";

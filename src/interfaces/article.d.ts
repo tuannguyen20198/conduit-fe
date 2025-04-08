@@ -1,4 +1,19 @@
-export interface ArticleFormData {
+interface Author {
+  username: string;
+  image: string;
+}
+
+interface Article {
+  [x: string]: any;
+  title: string;
+  body: string;
+  createdAt: string;
+  author: Author;
+  favoritesCount: number;
+  tagList: string[];
+  slug: string;
+}
+interface ArticleFormData {
   slug: string;
   title: string;
   description: string;
@@ -10,7 +25,7 @@ export interface ArticleFormData {
   likedBy: string[];
 }
 
-export interface AritcleProps {
+interface AritcleProps {
   article?: { title: string; description: string };
   register: any;
   handleSubmit: any;
@@ -22,7 +37,7 @@ export interface AritcleProps {
   errorMessages: string[];
 }
 
-export interface ArticleFormProps {
+interface ArticleFormProps {
   onSubmit: (data: any) => void;
   apiErrors: string[];
 }

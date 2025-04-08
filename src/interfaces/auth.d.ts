@@ -1,4 +1,4 @@
-export interface User {
+interface User {
   [x: string]: never[];
   email: string;
   token: string;
@@ -8,7 +8,7 @@ export interface User {
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
-export interface AuthContextType {
+interface AuthContextType {
   user: User | null;
   login: (userData: { user: User }) => void;
   register: (userData: { user: User }) => void;

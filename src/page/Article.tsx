@@ -7,21 +7,7 @@ import { useFollow } from '@/context/FollowContext';
 import rehypeRaw from 'rehype-raw';
 import Comment from '@/component/Comment';
 
-interface Author {
-  username: string;
-  image: string;
-}
 
-interface Article {
-  [x: string]: any;
-  title: string;
-  body: string;
-  createdAt: string;
-  author: Author;
-  favoritesCount: number;
-  tagList: string[];
-  slug: string;
-}
 
 const Article = () => {
   const { user } = useAuth();

@@ -1,4 +1,4 @@
-export interface SubmitButtonProps {
+interface SubmitButtonProps {
   label: string;
   disabled?: boolean;
 }

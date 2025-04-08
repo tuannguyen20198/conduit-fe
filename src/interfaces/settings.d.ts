@@ -1,5 +1,5 @@
 // Không cần `declare module`
-export interface FormData {
+interface FormData {
   image: string;
   username: string;
   bio: string;
@@ -7,18 +7,18 @@ export interface FormData {
   password: string;
 }
 
-export interface User {
+interface User {
   image: string;
   username: string;
   bio: string;
   email: string;
 }
 
-export interface SettingsFormData extends User {
+interface SettingsFormData extends User {
   password?: string;
 }
 
-export interface SettingsFormProps {
+interface SettingsFormProps {
   formData: {
     image: string;
     username: string;
@@ -33,4 +33,18 @@ export interface SettingsFormProps {
   handleSubmit: (e: React.FormEvent) => Promise<void>;
   error: string | null;
 }
-export interface SettingsProps extends SettingsFormProps {}
+interface SettingsProps {
+  user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  handleUpdate: (data: FormData) => Promise<void>;
+  error: string | null;
+  loading: boolean;
+  success: boolean;
+}
+interface SettingsForm {
+  image: string;
+  username: string;
+  bio: string;
+  email: string;
+  password: string;
+}
