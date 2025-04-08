@@ -34,12 +34,15 @@ interface SettingsFormProps {
   error: string | null;
 }
 interface SettingsProps {
-  user: User | null;
-  setUser: React.Dispatch<React.SetStateAction<User | null>>;
-  handleUpdate: (data: FormData) => Promise<void>;
+  formData: {
+    username: string;
+    bio: string;
+    image: string;
+  };
+  isChanged: boolean;
+  handleChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  handleSubmit: (event: React.FormEvent) => void;
   error: string | null;
-  loading: boolean;
-  success: boolean;
 }
 interface SettingsForm {
   image: string;

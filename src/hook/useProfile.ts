@@ -1,48 +1,87 @@
+// useProfile.tsx
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getArticlesGeneral, getProfile } from "@/lib/api"; // API calls
-import { ArticleFormData } from "@/interfaces/article";
 
-// Định nghĩa kiểu dữ liệu của Profile
-
-// Hook lấy dữ liệu Profile và bài viết của người dùng
 const useProfile = (username: string) => {
-  // Fetch thông tin người dùng
+  const [activeTab, setActiveTab] = useState<
+    "myArticles" | "favoritedArticles"
+  >("myArticles");
+  const [currentPage, setCurrentPage] = useState(1);
+  const articlesPerPage = 10;
+
+  // Fetching profile data
   const {
     data: profileData,
     isLoading: isProfileLoading,
     error: profileError,
-  } = useQuery<ProfileData>({
+  } = useQuery({
     queryKey: ["profile", username],
-    queryFn: () => getProfile(username), // Hàm API lấy thông tin người dùng
-    retry: 3, // Cố gắng lại 3 lần nếu có lỗi
-    staleTime: 1000 * 60 * 5, // Dữ liệu sẽ tươi mới trong 5 phút
+    queryFn: () => getProfile(username),
+    retry: 3,
+    staleTime: 1000 * 60 * 5,
   });
 
-  // Fetch bài viết của người dùng
+  // Fetching articles data
   const {
     data: articlesData,
     isLoading: isArticlesLoading,
     error: articlesError,
-  } = useQuery<ArticleData>({
+  } = useQuery({
     queryKey: ["articles", username],
-    queryFn: () =>
-      getArticlesGeneral({
-        author: username, // Chỉ lấy bài viết của tác giả có username là tham số
-        limit: 10, // Giới hạn số lượng bài viết, bạn có thể thay đổi
-      }),
-    enabled: !!profileData, // Chỉ fetch bài viết khi profile đã được tải xong
-    retry: 3, // Cố gắng lại 3 lần nếu có lỗi
-    staleTime: 1000 * 60 * 5, // Dữ liệu sẽ tươi mới trong 5 phút
+    queryFn: () => getArticlesGeneral({ author: username, limit: 10 }),
+    enabled: !!profileData, // Only fetch articles when profile data is available
+    retry: 3,
+    staleTime: 1000 * 60 * 5,
   });
 
   const isLoading = isProfileLoading || isArticlesLoading;
   const error = profileError || articlesError;
 
+  // Set default tab to "myArticles" when the component loads for the first time
+  useEffect(() => {
+    if (!activeTab) {
+      setActiveTab("myArticles"); // Set "myArticles" as the default active tab
+    }
+  }, [activeTab]);
+
+  // Ensure active tab is "myArticles" when visiting a specific user's profile
+  useEffect(() => {
+    if (username) {
+      setActiveTab("myArticles"); // Set "myArticles" as the active tab when visiting any user's profile page
+    }
+  }, [username]);
+
+  const handleTabClick = (tab: "myArticles" | "favoritedArticles") => {
+    setActiveTab(tab); // Update active tab
+    setCurrentPage(1); // Reset to page 1 when switching tabs
+  };
+
+  const handlePageClick = ({ selected }: { selected: number }) => {
+    setCurrentPage(selected + 1); // Update current page for pagination
+  };
+
+  // Filter articles by favorites count (only for 'favoritedArticles')
+  const filteredArticles =
+    articlesData?.filter((article: any) => {
+      if (activeTab === "favoritedArticles") {
+        return article.favoritesCount >= 1; // Only show articles with at least 1 like
+      }
+      return true; // For 'myArticles', show all
+    }) || [];
+
+  const pageCount = Math.ceil(filteredArticles.length / articlesPerPage);
+
   return {
     profileData,
-    articlesData,
+    articlesData: filteredArticles,
     isLoading,
     error,
+    activeTab,
+    currentPage,
+    pageCount,
+    handleTabClick,
+    handlePageClick,
   };
 };
 

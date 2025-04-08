@@ -9,11 +9,11 @@ const SettingsPage: React.FC = () => {
 
   return (
     <Settings
-    formData={{ ...formData, password: formData.password || "" }} // Đảm bảo `password` luôn là string
-    isChanged={isChanged}
-    handleChange={handleChange}
-    handleSubmit={handleSubmit}
-    error={error}
+      formData={{ ...formData, password: formData.password || "" }} // Đảm bảo `password` luôn là string
+      isChanged={isChanged}
+      handleChange={handleChange}
+      handleSubmit={handleSubmit}
+      error={error}
     />
   )
 
