@@ -1,20 +1,18 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
-// FormTags Component
 const FormTags = ({ onTagsChange, setError, clearErrors, defaultTags }: FormTagsProps) => {
-  const [tags, setTags] = useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>([]); // Cập nhật tags
   const [inputValue, setInputValue] = useState("");
 
-  // Update tags when component mounts or when defaultTags changes
   useEffect(() => {
     if (defaultTags && defaultTags.length > 0) {
-      setTags(defaultTags);
+      setTags(defaultTags); // Cập nhật tags khi defaultTags thay đổi
     }
-  }, [defaultTags]); // Ensure this effect runs only when defaultTags changes
+  }, [defaultTags]);
 
   const addTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && inputValue.trim()) {
-      e.preventDefault(); // Prevent form submit
+      e.preventDefault(); // Ngừng submit form khi nhấn Enter
 
       if (tags.includes(inputValue.trim())) {
         setError("tags", { type: "duplicate", message: "Tag already exists." });
@@ -22,37 +20,22 @@ const FormTags = ({ onTagsChange, setError, clearErrors, defaultTags }: FormTags
       }
 
       const newTags = [...tags, inputValue.trim()];
-      setTags(newTags);
-      onTagsChange(newTags);
-      clearErrors("tags"); // ✅ Clear error if any
-      setInputValue("");
+      setTags(newTags); // Cập nhật tags trong state
+      onTagsChange(newTags); // Truyền tags mới lên parent
+      clearErrors("tags"); // Xóa lỗi nếu có
+      setInputValue(""); // Reset input field
     }
   };
 
   const removeTag = (index: number) => {
-    const newTags = tags.filter((_, i) => i !== index);
-    setTags(newTags);
-    onTagsChange(newTags);
-
-    if (newTags.length === 0) {
-      setError("tags", { type: "required", message: "Tags are required" }); // ✅ Set error if no tags left
-    }
+    const newTags = tags.filter((_: string, i:number) => i !== index);
+    setTags(newTags); // Cập nhật tags trong state
+    onTagsChange(newTags); // Truyền tags mới lên parent
   };
-
-  useEffect(() => {
-    // Avoid setting errors every time tags change
-    if (tags.length === 0) {
-      setError("tags", { type: "required", message: "Tags are required" }); // ✅ Set error if no tags left
-    } else {
-      clearErrors("tags"); // ✅ Clear error if tags are present
-    }
-  }, [tags, setError, clearErrors]); // Dependencies only include tags
 
   return (
     <div className="form-group">
       <label>Tags</label>
-  
-      {/* Input to enter tags */}
       <input
         type="text"
         className="form-control"
@@ -61,13 +44,11 @@ const FormTags = ({ onTagsChange, setError, clearErrors, defaultTags }: FormTags
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={addTag}
       />
-  
-      {/* Tags list below the input */}
       {tags.length > 0 && (
-        <div className="tag-list" style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "8px", alignItems: "center" }}>
-          {tags.map((tag, index) => (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "8px" }}>
+          {tags.map((tag:string, index:number) => (
             <span key={index} className="tag-default tag-pill">
-              {tag}{" "}
+              {tag}
               <i
                 className="ion-close-round"
                 onClick={() => removeTag(index)}
@@ -80,5 +61,4 @@ const FormTags = ({ onTagsChange, setError, clearErrors, defaultTags }: FormTags
     </div>
   );
 };
-
 export default FormTags;

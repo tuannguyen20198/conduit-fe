@@ -7,9 +7,15 @@ interface FormInputProps {
   ) => void;
   value?: string;
 }
-interface EditorFormData {
+type EditorFormData = {
   tags: string[];
   title: string;
   description: string;
   body: string;
+  tagList?: string[]; // Add tagList to the type definition
+};
+
+interface EditorFormProps {
+  onSubmit: (data: any) => Promise<void>;
+  apiErrors: string[];
 }

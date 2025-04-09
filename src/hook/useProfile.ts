@@ -63,7 +63,7 @@ const useProfile = (username: string) => {
 
   // Filter articles by favorites count (only for 'favoritedArticles')
   const filteredArticles =
-    articlesData?.filter((article: any) => {
+    articlesData?.articles?.filter((article: any) => {
       if (activeTab === "favoritedArticles") {
         return article.favoritesCount >= 1; // Only show articles with at least 1 like
       }

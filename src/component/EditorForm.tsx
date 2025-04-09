@@ -1,9 +1,10 @@
 import { FormProvider } from "react-hook-form";
 import FormInput from "./FormInput";
-import FormTags from "./FormTags";
 import useEditor from "@/hook/useEditor";
+import FormTags from "./FormTags";
 
-const EditorForm = () => {
+
+const EditorForm: React.FC<EditorFormProps> = ({  }) => {
   // Using the useEditor hook to get the necessary values
   const {
     articleData,
@@ -15,7 +16,7 @@ const EditorForm = () => {
   } = useEditor(); // Use the custom hook
 
   // Function to handle clearing errors when typing in form inputs
-  const handleClearError = (fieldName: "tags" | "title" | "description" | "body") => {
+  const handleClearError = (fieldName: "tags" | "title" | "description" | "body") => () => {
     methods.clearErrors(fieldName);
   };
 
@@ -28,7 +29,7 @@ const EditorForm = () => {
             name="title"
             placeholder="Article Title"
             type="text"
-            onChange={() => handleClearError("title")} // Clear error when typing
+            onChange={handleClearError("title")} // Clear error when typing
           />
         </div>
 
@@ -38,7 +39,7 @@ const EditorForm = () => {
             name="description"
             placeholder="What's this article about?"
             type="text"
-            onChange={() => handleClearError("description")} // Clear error when typing
+            onChange={handleClearError("description")} // Clear error when typing
           />
         </div>
 
@@ -48,7 +49,7 @@ const EditorForm = () => {
             name="body"
             placeholder="Write your article"
             type="textarea" // You can use textarea or a markdown editor here
-            onChange={() => handleClearError("body")} // Clear error when typing
+            onChange={ handleClearError("body")} // Clear error when typing
           />
         </div>
 
