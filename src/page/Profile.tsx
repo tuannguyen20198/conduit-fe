@@ -9,6 +9,7 @@ import FollowButton from "@/component/FollowButton";
 
 const Profile = () => {
   const { user } = useAuth(); // Current authenticated user
+  const username = user?.username; // Get the username from the authenticated user
   const {
     activeTab,
     setActiveTab,
@@ -19,9 +20,7 @@ const Profile = () => {
     pageCount,
     handlePageClick,
   } = useFeeds(); // Using the updated useFeeds hook
-  const { username } = useParams(); // Lấy username từ URL
   const { profileData, articlesData } = useProfile(username!);
-
 
   const articlesPerPage = 10;
 
@@ -49,12 +48,22 @@ const Profile = () => {
     setActiveTab(tab); // Update active tab
   };
 
-  // Filter articles by favorites count (only for 'favoritedArticles')
+  // Filter articles by the user's favorites (only for 'myArticles' tab)
   const filteredArticles = articles.filter((article: any) => {
-    if (activeTab === 'favoritedArticles') {
-      return article.favoritesCount >= 1; // Only show articles with at least 1 like
+    const favorites = article.favorites || []; // Đảm bảo favorites là một mảng
+    const isFavoritedByUser = favorites.some((favorite: any) => favorite.username === user?.username);
+
+    if (activeTab === 'myArticles') {
+      // Lọc bài viết mà chính người dùng đã thích hoặc bài viết của chính người dùng
+      return article.author.username === user?.username || isFavoritedByUser;
     }
-    return true; // For 'myArticles', show all
+
+    if (activeTab === 'favoritedArticles') {
+      // Hiển thị các bài viết có ít nhất một lượt thích
+      return article.favoritesCount >= 1;
+    }
+
+    return true;
   });
 
   return (
@@ -72,7 +81,7 @@ const Profile = () => {
                 <div className="user-details">
                   <h4>{profileData?.username}</h4>
                   <p>{profileData?.bio || "This user hasn't written a bio yet."}</p>
-                  <div className="action-buttons" style={{ display: 'flex', gap: '8px',justifyContent: 'center' }}>
+                  <div className="action-buttons" style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                     {/* Nút Follow (nếu không phải là chính mình) */}
                     {profileData?.username !== user?.username && (
                       <FollowButton profileUsername={profileData?.username || ""} />
@@ -137,10 +146,10 @@ const Profile = () => {
                       </a>
                       <span className="date">{article.createdAt}</span>
                     </div>
-                    {/* Disable like button in "My Articles" tab */}
+                    {/* Nếu bài viết là của chính người dùng, hiển thị lượt thích */}
                     <button
                       className="btn btn-outline-primary btn-sm pull-xs-right"
-                      disabled={activeTab === 'myArticles'} // Disable if it's "My Articles" tab
+                      disabled={activeTab === 'myArticles'} // Disable nếu là tab "My Articles"
                     >
                       <i className="ion-heart"></i> {article.favoritesCount}
                     </button>
