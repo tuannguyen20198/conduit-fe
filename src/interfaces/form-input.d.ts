@@ -7,3 +7,9 @@ interface FormInputProps {
   ) => void;
   value?: string;
 }
+interface EditorFormData {
+  tags: string[];
+  title: string;
+  description: string;
+  body: string;
+}

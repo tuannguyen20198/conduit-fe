@@ -13,12 +13,7 @@ const useEditor = (refreshArticles?: () => void) => {
   const [loading, setLoading] = useState<boolean>(true);
 
   // Đặt cấu hình form với type bao gồm cả body
-  const methods = useForm<{
-    tags: string[];
-    title: string;
-    description: string;
-    body: string;
-  }>({
+  const methods = useForm<EditorFormData>({
     mode: "onSubmit",
     defaultValues: { tags: [], body: "" },
   });
@@ -32,8 +27,11 @@ const useEditor = (refreshArticles?: () => void) => {
 
   // Hàm xử lý tags
   const handleTagsChange = (tags: string[]) => {
+    // Cập nhật giá trị tags trong form
     setValue("tags", tags);
-    if (tags.length > 0) clearErrors("tags");
+    if (tags.length > 0) {
+      clearErrors("tags"); // Nếu có tags, xóa lỗi tags
+    }
   };
 
   // Fetch dữ liệu bài viết khi slug có
@@ -41,11 +39,19 @@ const useEditor = (refreshArticles?: () => void) => {
     if (slug) {
       try {
         const data = await getArticleBySlug(slug);
+        console.log("Fetched Article Data:", data); // Kiểm tra cấu trúc dữ liệu
         setArticleData(data);
+
+        // Cập nhật dữ liệu cho form
+        if (data && data.body) {
+          setValue("body", data.body); // Cập nhật body
+        }
+
+        // Cập nhật title, description, và tags
         setValue("title", data.title);
         setValue("description", data.description);
-        setValue("body", data.body);
-        setValue("tags", data.tagList || []);
+        setValue("tags", data.tagList || []); // Cập nhật tags từ data.tagList
+
         setLoading(false);
       } catch (error: unknown) {
         if (error instanceof Error) {
