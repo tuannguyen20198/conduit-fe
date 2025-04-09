@@ -1,4 +1,3 @@
-// useProfile.tsx
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getArticlesGeneral, getProfile } from "@/lib/api"; // API calls
@@ -19,7 +18,7 @@ const useProfile = (username: string) => {
     queryKey: ["profile", username],
     queryFn: () => getProfile(username),
     retry: 3,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   // Fetching articles data
@@ -32,7 +31,7 @@ const useProfile = (username: string) => {
     queryFn: () => getArticlesGeneral({ author: username, limit: 10 }),
     enabled: !!profileData, // Only fetch articles when profile data is available
     retry: 3,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const isLoading = isProfileLoading || isArticlesLoading;
@@ -43,7 +42,7 @@ const useProfile = (username: string) => {
     if (!activeTab) {
       setActiveTab("myArticles"); // Set "myArticles" as the default active tab
     }
-  }, [activeTab]);
+  }, []); // Empty dependency to run only once
 
   // Ensure active tab is "myArticles" when visiting a specific user's profile
   useEffect(() => {
@@ -52,11 +51,13 @@ const useProfile = (username: string) => {
     }
   }, [username]);
 
+  // Handle tab click to switch between 'myArticles' and 'favoritedArticles'
   const handleTabClick = (tab: "myArticles" | "favoritedArticles") => {
     setActiveTab(tab); // Update active tab
     setCurrentPage(1); // Reset to page 1 when switching tabs
   };
 
+  // Handle page click for pagination
   const handlePageClick = ({ selected }: { selected: number }) => {
     setCurrentPage(selected + 1); // Update current page for pagination
   };
@@ -67,14 +68,24 @@ const useProfile = (username: string) => {
       if (activeTab === "favoritedArticles") {
         return article.favoritesCount >= 1; // Only show articles with at least 1 like
       }
-      return true; // For 'myArticles', show all
+      return true; // For 'myArticles', show all articles
     }) || [];
 
-  const pageCount = Math.ceil(filteredArticles.length / articlesPerPage);
+  // Paginate filtered articles for the current page
+  const paginatedArticles = filteredArticles.slice(
+    (currentPage - 1) * articlesPerPage,
+    currentPage * articlesPerPage
+  );
+
+  // Calculate the total number of pages
+  const pageCount = Math.max(
+    1,
+    Math.ceil(filteredArticles.length / articlesPerPage)
+  );
 
   return {
     profileData,
-    articlesData: filteredArticles,
+    articlesData: paginatedArticles, // Return only the paginated articles
     isLoading,
     error,
     activeTab,

@@ -91,7 +91,7 @@ const Profile = () => {
                 <h4>No articles to display.</h4>
               </div>
             ) : (
-              articlesData.slice((currentPage - 1) * 10, currentPage * 10).map((article: any) => (
+              articlesData.map((article: any) => (
                 <div className="article-preview" key={article.slug}>
                   <div className="article-meta">
                     <a href={`/profile/${article.author.username}`}>
@@ -124,7 +124,8 @@ const Profile = () => {
               ))
             )}
 
-            {!isLoading && (
+            {/* Show pagination only if articles exist */}
+            {pageCount > 1 && !isLoading && (
               <ReactPaginate
                 previousLabel={"←"}
                 nextLabel={"→"}
