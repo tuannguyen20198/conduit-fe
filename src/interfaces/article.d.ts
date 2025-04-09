@@ -45,7 +45,26 @@ interface ArticleFormProps {
 
 interface FormTagsProps {
   onTagsChange: (tags: string[]) => void;
-  setError: UseFormSetError<any>; // Nhận setError từ React Hook Form
-  clearErrors: (name: string) => void;
+  setError: (
+    field:
+      | "tags"
+      | "title"
+      | "description"
+      | "body"
+      | "root"
+      | `root.${string}`
+      | `tags.${number}`,
+    error: { type: string; message: string }
+  ) => void;
+  clearErrors: (
+    field:
+      | "tags"
+      | "title"
+      | "description"
+      | "body"
+      | "root"
+      | `root.${string}`
+      | `tags.${number}`
+  ) => void;
   defaultTags: string[];
 }

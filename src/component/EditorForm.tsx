@@ -34,6 +34,8 @@ const EditorForm = ({ onSubmit, apiErrors }: any) => {
             <FormTags
               onTagsChange={handleTagsChange}
               defaultTags={articleData?.tagList || []} // Truyền tags nếu có từ bài viết
+              setError={methods.setError}
+              clearErrors={methods.clearErrors}
             />
             {errors.tags && <p className="text-danger">{String(errors.tags.message)}</p>}
           </fieldset>

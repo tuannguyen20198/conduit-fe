@@ -1,11 +1,10 @@
-import { FormTagsProps } from "@/interfaces/article";
 import { useEffect, useState } from "react";
 
 const FormTags = ({ onTagsChange, setError, clearErrors, defaultTags }: FormTagsProps) => {
   const [tags, setTags] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState("");
 
-  // Cập nhật tags khi component mount hoặc khi defaultTags thay đổi
+  // Update tags when component mounts or when defaultTags changes
   useEffect(() => {
     if (defaultTags && defaultTags.length > 0) {
       setTags(defaultTags);
@@ -14,7 +13,7 @@ const FormTags = ({ onTagsChange, setError, clearErrors, defaultTags }: FormTags
 
   const addTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && inputValue.trim()) {
-      e.preventDefault(); // Ngăn form submit
+      e.preventDefault(); // Prevent form submit
 
       if (tags.includes(inputValue.trim())) {
         setError("tags", { type: "duplicate", message: "Tag already exists." });
@@ -24,7 +23,7 @@ const FormTags = ({ onTagsChange, setError, clearErrors, defaultTags }: FormTags
       const newTags = [...tags, inputValue.trim()];
       setTags(newTags);
       onTagsChange(newTags);
-      clearErrors("tags"); // ✅ Xóa lỗi nếu có
+      clearErrors("tags"); // ✅ Clear error if any
       setInputValue("");
     }
   };
@@ -35,15 +34,15 @@ const FormTags = ({ onTagsChange, setError, clearErrors, defaultTags }: FormTags
     onTagsChange(newTags);
 
     if (newTags.length === 0) {
-      setError("tags", { type: "required", message: "Tags is required" }); // ✅ Gán lỗi khi xóa hết tags
+      setError("tags", { type: "required", message: "Tags is required" }); // ✅ Set error if no tags left
     }
   };
 
   useEffect(() => {
     if (tags.length === 0) {
-      setError("tags", { type: "required", message: "Tags is required" }); // ✅ Gán lỗi khi xóa hết tags
+      setError("tags", { type: "required", message: "Tags is required" }); // ✅ Set error if no tags left
     } else {
-      clearErrors("tags"); // ✅ Xóa lỗi nếu có
+      clearErrors("tags"); // ✅ Clear error if tags are present
     }
   }, [tags, setError, clearErrors]);
 
@@ -51,7 +50,7 @@ const FormTags = ({ onTagsChange, setError, clearErrors, defaultTags }: FormTags
     <div className="form-group">
       <label>Tags</label>
   
-      {/* Input nhập tags */}
+      {/* Input to enter tags */}
       <input
         type="text"
         className="form-control"
@@ -61,9 +60,9 @@ const FormTags = ({ onTagsChange, setError, clearErrors, defaultTags }: FormTags
         onKeyDown={addTag}
       />
   
-      {/* Danh sách tags - luôn hiển thị bên dưới input */}
+      {/* Tags list below the input */}
       {tags.length > 0 && (
-        <div className="tag-list" style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "8px",alignItems: "center"  }}>
+        <div className="tag-list" style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "8px", alignItems: "center" }}>
           {tags.map((tag, index) => (
             <span key={index} className="tag-default tag-pill">
               {tag}{" "}
