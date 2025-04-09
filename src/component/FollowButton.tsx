@@ -66,9 +66,9 @@ const FollowButton = ({ profileUsername }: { profileUsername: string }) => {
       {loading ? (
         <span>Loading...</span>
       ) : isFollowing ? (
-        <span>Unfollow</span>
-      ) : (
         <span>Follow</span>
+      ) : (
+        <span>Unfollow</span>
       )}
     </button>
   );

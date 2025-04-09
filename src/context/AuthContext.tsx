@@ -1,5 +1,3 @@
-import { AuthContextType } from "@/interfaces/auth";
-import { User } from "@/interfaces/auth";
 import { getMe } from "@/lib/api";
 import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
 

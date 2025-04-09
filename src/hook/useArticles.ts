@@ -35,6 +35,28 @@ const useArticles = () => {
       fetchArticle();
     }
   }, [slug]);
+  // Reset follow state when the article's author changes
+  useEffect(() => {
+    if (article && article.author.username) {
+      setFollowing(
+        article.author.username,
+        following[article.author.username] || false
+      );
+    }
+  }, [article?.author?.username, setFollowing, following]); // This will ensure the following state is correctly updated when switching to a new user or article
+
+  // Sync follow status from localStorage on mount
+  useEffect(() => {
+    const savedFollowData = localStorage.getItem("followingData");
+    if (savedFollowData) {
+      const parsedFollowData = JSON.parse(savedFollowData);
+      if (article) {
+        const isUserFollowing =
+          parsedFollowData[article.author.username] || false;
+        setFollowing(article.author.username, isUserFollowing);
+      }
+    }
+  }, [article?.author?.username, setFollowing]);
 
   // Sync follow status from localStorage on mount
   useEffect(() => {
