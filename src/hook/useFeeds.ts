@@ -51,7 +51,7 @@ const useFeeds = () => {
     setIsLoading(true);
     try {
       const startTime = Date.now(); // Thời gian bắt đầu
-      await simulateDelay(1000); // Giả lập độ trễ 1 giây
+      await simulateDelay(100); // Giả lập độ trễ 1 giây
       let url = "/articles";
       let params: any = {
         offset: (currentPage - 1) * articlesPerPage,

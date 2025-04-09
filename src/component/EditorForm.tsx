@@ -3,46 +3,70 @@ import FormInput from "./FormInput";
 import FormTags from "./FormTags";
 import useEditor from "@/hook/useEditor";
 
-const EditorForm = ({ onSubmit, apiErrors }: any) => {
-  // Sử dụng hook useEditor để lấy các giá trị cần thiết
+const EditorForm = () => {
+  // Using the useEditor hook to get the necessary values
   const {
     articleData,
     handleTagsChange,
     onSubmitArticles,
     loading,
     errors,
-    methods, // Phương thức từ useForm
-  } = useEditor(); // Sử dụng hook đã viết sẵn của bạn
+    methods, // Methods from useForm
+  } = useEditor(); // Use the custom hook
+
+  // Function to handle clearing errors when typing in form inputs
+  const handleClearError = (fieldName: "tags" | "title" | "description" | "body") => {
+    methods.clearErrors(fieldName);
+  };
 
   return (
     <FormProvider {...methods}>
       <form onSubmit={methods.handleSubmit(onSubmitArticles)}>
+        {/* Title Input */}
         <div className="form-group mb-3">
-          <FormInput name="title" placeholder="Article Title" type="text" />
+          <FormInput
+            name="title"
+            placeholder="Article Title"
+            type="text"
+            onChange={() => handleClearError("title")} // Clear error when typing
+          />
         </div>
 
+        {/* Description Input */}
         <div className="form-group mb-3">
-          <FormInput name="description" placeholder="What's this article about?" type="text" />
+          <FormInput
+            name="description"
+            placeholder="What's this article about?"
+            type="text"
+            onChange={() => handleClearError("description")} // Clear error when typing
+          />
         </div>
 
+        {/* Body Input: You might need a custom component for markdown or textarea */}
         <div className="form-group mb-3">
-          <FormInput name="body" placeholder="Write your article" type="markdown" />
+          <FormInput
+            name="body"
+            placeholder="Write your article"
+            type="textarea" // You can use textarea or a markdown editor here
+            onChange={() => handleClearError("body")} // Clear error when typing
+          />
         </div>
 
+        {/* Tags Input */}
         <div className="form-group mb-3">
           <fieldset className="form-group">
             <FormTags
               onTagsChange={handleTagsChange}
-              defaultTags={articleData?.tagList || []} // Truyền tags nếu có từ bài viết
-              setError={methods.setError}
-              clearErrors={methods.clearErrors}
+              defaultTags={articleData?.tagList || []} // Pass tags from article if available
+              setError={methods.setError} // Pass setError from methods
+              clearErrors={methods.clearErrors} // Pass clearErrors from methods
             />
-            {errors.tags && <p className="text-danger">{String(errors.tags.message)}</p>}
           </fieldset>
         </div>
 
-        <button className="btn btn-primary" type="submit">
-          {articleData?.slug ? "Update Article" : "Create Article"} {/* Hiển thị nút khác nhau cho tạo mới và cập nhật */}
+        {/* Submit Button */}
+        <button className="btn btn-primary" type="submit" disabled={loading}>
+          {articleData?.slug ? "Update Article" : "Create Article"} {/* Show different button for create and update */}
         </button>
       </form>
     </FormProvider>

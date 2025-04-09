@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
+// FormTags Component
 const FormTags = ({ onTagsChange, setError, clearErrors, defaultTags }: FormTagsProps) => {
   const [tags, setTags] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -9,7 +10,7 @@ const FormTags = ({ onTagsChange, setError, clearErrors, defaultTags }: FormTags
     if (defaultTags && defaultTags.length > 0) {
       setTags(defaultTags);
     }
-  }, [defaultTags]);
+  }, [defaultTags]); // Ensure this effect runs only when defaultTags changes
 
   const addTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && inputValue.trim()) {
@@ -34,17 +35,18 @@ const FormTags = ({ onTagsChange, setError, clearErrors, defaultTags }: FormTags
     onTagsChange(newTags);
 
     if (newTags.length === 0) {
-      setError("tags", { type: "required", message: "Tags is required" }); // ✅ Set error if no tags left
+      setError("tags", { type: "required", message: "Tags are required" }); // ✅ Set error if no tags left
     }
   };
 
   useEffect(() => {
+    // Avoid setting errors every time tags change
     if (tags.length === 0) {
-      setError("tags", { type: "required", message: "Tags is required" }); // ✅ Set error if no tags left
+      setError("tags", { type: "required", message: "Tags are required" }); // ✅ Set error if no tags left
     } else {
       clearErrors("tags"); // ✅ Clear error if tags are present
     }
-  }, [tags, setError, clearErrors]);
+  }, [tags, setError, clearErrors]); // Dependencies only include tags
 
   return (
     <div className="form-group">
